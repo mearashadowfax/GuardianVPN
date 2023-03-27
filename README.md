@@ -25,7 +25,7 @@ Once the bot is running, users can interact with it by sending commands via Tele
 • `/limitations`: Learn about bot's limitations  
 • `/privacy`: View privacy policy  
 • `/start`: Start the bot and get a welcome message  
-• `/status`: Check the status of VPN connection  
+• `/status`: Check the status of VPN server  
 • `/support`: Contact us  
 • `/terms`: Read our terms and conditions  
 • `/tutorial`: Instructions on how to use an OpenVPN config file with the OpenVPN app  
