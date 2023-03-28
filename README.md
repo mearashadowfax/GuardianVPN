@@ -5,13 +5,17 @@
 This project is a Telegram Bot that allows users to connect to an OpenVPN server and generate configuration files via a Telegram Bot. It also includes some additional command handlers to provide information about the VPN service.
 
 ## Features
-• Generate client configuration files via Telegram Bot  
+• Generate VPN configuration files with ease via Telegram Bot  
 • Connect to OpenVPN server  
 • Additional command handlers to provide information about the VPN service  
 
 ## Installation
-1. Create a new Telegram bot using BotFather
-2. Clone the repository
+1. Create a new Telegram bot using BotFather:  
+    • Open Telegram and search for BotFather  
+    • Type `/start` to start the conversation with BotFathe  
+    • Type `/newbot` and follow the instructions to create a new bot  
+    • BotFather will provide you with a `TELEGRAM_API_TOKEN`. Save it for later use  
+2. Clone this repository and navigate to the project directory
 3. Install the required dependencies using `pip install -r requirements.txt`
 4. Create a `config.py` file and set the necessary environment variables (`TELEGRAM_API_TOKEN`) 
 5. Run `python bot.py` script
