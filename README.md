@@ -19,7 +19,9 @@ This project is a Telegram Bot that allows users to connect to an OpenVPN server
 3. Install the required dependencies using `pip install -r requirements.txt`
 4. Create a `config.py` file and set the necessary environment variables (`TELEGRAM_API_TOKEN`) 
 5. Run `python bot.py` script
-6. Start the bot in Telegram by searching for the bot name and clicking on the `start` button
+6. Start the bot in Telegram by searching for the bot name and clicking on the `start` button  
+
+Note: By default, this project uses PiVPN to configure a VPN server, however, you can modify the code to add your own desired options.
 
 ## Usage
 Once the bot is running, users can interact with it by sending commands via Telegram. The available commands are:  
