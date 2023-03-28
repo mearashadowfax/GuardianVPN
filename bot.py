@@ -1,7 +1,8 @@
 # import the required modules
-import subprocess
-import datetime
-import json
+import subprocess   # for running shell commands
+import datetime     # for getting the current date/time
+import json         # for working with JSON data
+import pexpect      # for interacting with command line prompts
 
 # import the Telegram API token from config.py
 from config import TELEGRAM_API_TOKEN
@@ -23,7 +24,16 @@ async def generate_config(update: Update, context: ContextTypes.DEFAULT_TYPE):
     client_config_path = f"/home/sammy/ovpns/{client_name}.ovpn"
     
     # execute the OpenVPN script to generate the client config file
-    subprocess.run(["sudo", "pivpn", "add", "nopass", "-n", client_name, "-d", "30"])
+    # note: this command requires root privileges
+    subprocess.run(["pivpn", "add", "nopass", "-n", client_name, "-d", "30"])
+    
+    # alternative method for running the sudo command using pexpect:
+    # execute the OpenVPN script to generate the client config file
+    #password = "your_password"  # change this to your sudo password
+    #child = pexpect.spawn(f"sudo pivpn add nopass -n {client_name} -d 30")
+    #child.expect("password")
+    #child.sendline(password)
+    #child.expect(pexpect.EOF)
     
     # open the client config file and send it to the user
     with open(client_config_path, "rb") as f:
