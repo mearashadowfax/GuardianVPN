@@ -44,6 +44,10 @@ async def generate_config(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # define the path for the client config file
     client_config_path = f"/home/sammy/ovpns/{client_name}.ovpn"
     
+    # execute the OpenVPN script to generate the client config file
+    # note: this command requires root privileges
+    subprocess.run(["pivpn", "add", "nopass", "-n", client_name, "-d", "30"])
+    
     # alternative method for running the sudo command using pexpect:
     # execute the OpenVPN script to generate the client config file
     #password = "your_password"  # change this to your sudo password
