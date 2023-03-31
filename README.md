@@ -8,6 +8,7 @@ This project is a Telegram Bot that allows users to connect to an OpenVPN server
 • Generate VPN configuration files with ease via Telegram Bot  
 • Connect to OpenVPN server  
 • Additional command handlers to provide information about the VPN service  
+• Payment options to purchase VPN access passes for a selected duration
 
 ## Installation
 1. Create a new Telegram bot using BotFather:  
@@ -22,6 +23,8 @@ This project is a Telegram Bot that allows users to connect to an OpenVPN server
 6. Start the bot in Telegram by searching for the bot name and clicking on the `start` button  
 
 Note: By default, this project uses PiVPN to configure a VPN server, however, you can modify the code to add your own desired options.
+
+The Payment options feature enables users to purchase VPN access passes for a selected duration using their preferred payment method. The configuration file will be generated after payment. Please note that to enable payments in your bot, you will need to set up a payment provider and obtain a payment provider token. Telegram's BotFather provides instructions for setting up payments in your bot.
 
 ## Usage
 Once the bot is running, users can interact with it by sending commands via Telegram. The available commands are:  
@@ -39,8 +42,8 @@ Once the bot is running, users can interact with it by sending commands via Tele
 
 ## Future Development
 Here are some ideas for potential future developments to this project:  
-• Adding Wireguard option: Currently, this bot only supports OpenVPN. However, adding support for the Wireguard VPN protocol could provide users with more options for securing their internet connection.  
-• Allow users to choose a country for VPN connection: Currently, this bot connects to a default VPN server. Allowing users to choose a specific country for their VPN connection would give them greater control over their online privacy and security.
+• Add support for the Wireguard VPN protocol  
+• Allow users to choose a specific country for their VPN connection
 
 ## Contributions
 Contributions to this project are welcome. If you find a bug or have a feature request, please open an issue on the [GitHub repository](https://github.com/mearashadowfax/GuardianVPN/issues). If you'd like to contribute code, please fork the repository and submit a pull request.
