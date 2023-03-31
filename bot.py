@@ -8,9 +8,13 @@ import pexpect      # for interacting with command line prompts
 from config import TELEGRAM_API_TOKEN
 telegram_api_token = TELEGRAM_API_TOKEN
 
+# import the Payment provider token from config.py
+from config import PAYMENT_PROVIDER_TOKEN
+PAYMENT_PROVIDER_TOKEN = PAYMENT_PROVIDER_TOKEN
+
 # import the required Telegram modules
-from telegram import Update
-from telegram.ext import Application, CommandHandler, MessageHandler, filters, ApplicationBuilder, ContextTypes
+from telegram import Update, LabeledPrice, InlineKeyboardMarkup, InlineKeyboardButton
+from telegram.ext import CallbackQueryHandler, CommandHandler, MessageHandler, filters, ApplicationBuilder, ContextTypes, PreCheckoutQueryHandler
 
 # define a function to get the user's language preference
 async def get_language(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
@@ -33,8 +37,111 @@ async def get_language(update: Update, context: ContextTypes.DEFAULT_TYPE) -> st
     
     return language
 
-# define the command handler for generating OpenVPN client config files
 async def generate_config(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    
+    # get the user's language preference
+    language = await get_language(update, context)
+
+    # load text based on language preference
+    with open(f'{language}_strings.json', 'r') as f:
+        strings = json.load(f)
+
+    # create InlineKeyboardMarkup with two buttons
+    button1_text = "1 Week - $1"
+    button1_callback_data = "product_a"
+    button2_text = "1 Month - $3"
+    button2_callback_data = "product_b"
+    markup = InlineKeyboardMarkup([[InlineKeyboardButton(button1_text, callback_data=button1_callback_data)], [InlineKeyboardButton(button2_text, callback_data=button2_callback_data)]])
+
+    # send message to the user with the two products to choose from
+    chat_id = update.message.chat_id
+    description = strings['description']
+    await context.bot.send_message(chat_id, description, reply_markup=markup)
+
+# define a function that handles user's callback query when a product is selected
+async def select_product(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+# extract the callback query and chat id from the update object
+    query = update.callback_query
+    chat_id = query.message.chat_id
+
+# extract the selected product from the callback query data
+    product = query.data
+
+# Check which product is selected and set the corresponding price, title, payload and description
+    if product == "product_a":
+        price = [LabeledPrice("1 Week", 1 * 100)]
+        title = "VPN Access Pass - 1 Week"
+        description = "Get one week of unlimited access to GuardianVPN"
+        payload = "1 Week"
+    elif product == "product_b":
+        price = [LabeledPrice("1 Month", 3 * 100)]
+        title = "VPN Access Pass - 1 Month"
+        description = "Get one month of unlimited access to GuardianVPN"
+        payload = "1 Month"
+    else:
+    # handle invalid product selection by returning
+        return
+
+# set the payment currenc
+    currency = "USD"
+
+# send the invoice to the user with the selected product price
+    await context.bot.send_invoice(chat_id, title, description, payload, PAYMENT_PROVIDER_TOKEN, currency, price)
+
+
+# pre-checkout callback function
+async def precheckout_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    
+    # extract the invoice payload
+    invoice_payload = update.pre_checkout_query.invoice_payload
+    selected_plan = None
+    
+    # check which plan was selected and set the duration accordingly
+    if "1 Week" in invoice_payload:
+        duration_days = 7
+        selected_plan = "1 Week"
+    elif "1 Month" in invoice_payload:
+        duration_days = 30
+        selected_plan = "1 Month"
+    else:
+        # invalid invoice payload
+        await update.pre_checkout_query.answer(ok=False, error_message="Invalid invoice payload")
+        return
+    
+    # answers the PreQecheckoutQuery
+    query = update.pre_checkout_query
+    # check the invoice payload, is it from your bot?
+    if query.invoice_payload != "Custom-Payload":
+        # answer False PreCheckoutQuery
+        await query.answer(ok=False, error_message="Something went wrong...")
+    else:
+        await query.answer(ok=True)
+        
+    # store the selected plan and duration in the user data
+    user_data = context.user_data
+    user_data['selected_plan'] = selected_plan
+    user_data['duration_days'] = duration_days
+
+
+# callback function after contacting the payment provider
+async def successful_payment_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    # get the user's language preference
+    language = await get_language(update, context)
+
+    # load text based on language preference
+    with open(f'{language}_strings.json', 'r') as f:
+        strings = json.load(f)
+    
+    # confirms the successful payment
+    successful_payment = strings['successful_payment']
+    await update.message.reply_text(successful_payment)
+    # call the function generate_config_success() to generate and send the client configuration file
+    await generate_config_success(update, context)
+
+# define the command handler for generating OpenVPN client config files
+async def generate_config_success(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # get the user ID from the Telegram message
     user_id = update.message.from_user.id
     
@@ -44,10 +151,19 @@ async def generate_config(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # define the path for the client config file
     client_config_path = f"/home/sammy/ovpns/{client_name}.ovpn"
     
+    # get the selected plan and duration days from the user data
+    user_data = context.user_data
+    selected_plan = user_data.get('selected_plan')
+    duration_days = user_data.get('duration_days')
+
+    # execute the OpenVPN script to generate the client config file
+    # note: this command requires root privileges
+    subprocess.run(["pivpn", "add", "nopass", "-n", client_name, "-d", str(duration_days)])
+
     # alternative method for running the sudo command using pexpect:
     # execute the OpenVPN script to generate the client config file
     #password = "your_password"  # change this to your sudo password
-    #child = pexpect.spawn(f"sudo pivpn add nopass -n {client_name} -d 30")
+    #child = pexpect.spawn(f"sudo pivpn add nopass -n {client_name} -d {duration_days}")
     #child.expect("password")
     #child.sendline(password)
     #child.expect(pexpect.EOF)
@@ -55,6 +171,15 @@ async def generate_config(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # open the client config file and send it to the user
     with open(client_config_path, "rb") as f:
         await update.message.reply_document(document=f, filename=f"{client_name}.ovpn")
+
+    # send a message to the user confirming the duration of their plan
+    if selected_plan is not None:
+        duration_message = f"Your GuardianVPN service will be active for {selected_plan}."
+        await update.message.reply_text(duration_message)
+
+    # delete the user data to prevent resending the same configuration file
+    del user_data['selected_plan']
+    del user_data['duration_days']
 
 # define a function to handle the /start command
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -249,6 +374,7 @@ def main():
 
 # add the command handlers
     application.add_handler(CommandHandler("generate_config", generate_config))
+    application.add_handler(CommandHandler("generate_config_success", generate_config_success))
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("help", help))
     application.add_handler(CommandHandler("about", about))
@@ -261,10 +387,18 @@ def main():
     application.add_handler(CommandHandler("support", support))
     application.add_handler(CommandHandler("whatsnew", whatsnew))
 
-# unknown command handler
-    unknown_handler = MessageHandler(filters.COMMAND, unknown)
-    application.add_handler(unknown_handler)
+# adds a callback query handler for when the user selects a product to purchase
+    application.add_handler(CallbackQueryHandler(select_product))
 
+# add a message handler to handle unknown commands or messages   
+    application.add_handler(MessageHandler(filters.ALL, unknown))
+
+# add a pre-checkout handler to verify and respond to pre-checkout queries
+    application.add_handler(PreCheckoutQueryHandler(precheckout_callback))
+
+# add a message handler to handle successful payments and notify the user
+    application.add_handler(MessageHandler(filters.SUCCESSFUL_PAYMENT, successful_payment_callback))
+    
 # start the Telegram bot
     application.run_polling()
 
