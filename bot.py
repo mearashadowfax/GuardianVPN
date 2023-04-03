@@ -87,7 +87,7 @@ async def select_product(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # handle invalid product selection by returning
         return
 
-    # set the payment currenc
+    # set the payment currency
     currency = "USD"
 
     # send the invoice to the user with the selected product price
@@ -164,12 +164,11 @@ async def generate_config_success(update: Update, context: ContextTypes.DEFAULT_
     subprocess.run(["pivpn", "add", "nopass", "-n", client_name, "-d", str(duration_days)])
 
     # alternative method for running the sudo command using pexpect:
-    # execute the OpenVPN script to generate the client config file
-    # password = "your_password"  # change this to your sudo password
-    # child = pexpect.spawn(f"sudo pivpn add nopass -n {client_name} -d {duration_days}")
-    # child.expect("password")
-    # child.sendline(password)
-    # child.expect(pexpect.EOF)
+    password = "your_password"  # change this to your sudo password
+    child = pexpect.spawn(f"sudo pivpn add nopass -n {client_name} -d {duration_days}")
+    child.expect("password")
+    child.sendline(password)
+    child.expect(pexpect.EOF)
 
     # open the client config file and send it to the user
     with open(client_config_path, "rb") as f:
@@ -327,7 +326,8 @@ async def whatsnew(update: Update, context: ContextTypes.DEFAULT_TYPE):
             # send a message with latest updates and improvements
             await update.message.reply_text(
                 f"New updates and improvements since {last_update_date}:\n"
-                "• Added support for French, German, Russian, and Spanish languages based on user's Telegram language preference\n"
+                "• Added support for French, German, Russian, and Spanish languages based on user's Telegram language "
+                "preference\n"
             )
         else:
             # send a message indicating that there are no new updates
@@ -336,7 +336,8 @@ async def whatsnew(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # send a message with all updates and improvements
         await update.message.reply_text(
             "All updates and improvements:\n"
-            "• Added support for French, German, Russian, and Spanish languages based on user's Telegram language preference\n"
+            "• Added support for French, German, Russian, and Spanish languages based on user's Telegram language "
+            "preference\n"
             "• Fixed issue with user authentication and handling the /getapp command\n"
             "• Increased server speed and reliability\n"
             "• Bug fixes and performance improvements\n"
@@ -371,7 +372,7 @@ async def getapp(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(f"{download_links_message}{download_links_str}")
 
 
-# handle unknow command
+# handle unknown command
 async def unknown(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Sorry, I didn't understand that command.")
 
