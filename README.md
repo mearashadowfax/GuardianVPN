@@ -13,7 +13,7 @@ This project is a Telegram Bot that allows users to connect to an OpenVPN server
 ## Installation
 1. Create a new Telegram bot using BotFather:  
     • Open Telegram and search for BotFather  
-    • Type `/start` to start the conversation with BotFathe  
+    • Type `/start` to start the conversation with BotFather  
     • Type `/newbot` and follow the instructions to create a new bot  
     • BotFather will provide you with a `TELEGRAM_API_TOKEN`. Save it for later use  
 2. Clone this repository and navigate to the project directory
