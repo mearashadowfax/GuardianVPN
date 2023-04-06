@@ -15,9 +15,9 @@ from config import PAYMENT_PROVIDER_TOKEN
 PAYMENT_PROVIDER_TOKEN = PAYMENT_PROVIDER_TOKEN
 
 # import the required Telegram modules
-from telegram import Update, LabeledPrice, InlineKeyboardMarkup, InlineKeyboardButton
+from telegram import Update, LabeledPrice, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from telegram.ext import CallbackQueryHandler, CommandHandler, MessageHandler, filters, ApplicationBuilder, \
-    ContextTypes, PreCheckoutQueryHandler
+    ContextTypes, PreCheckoutQueryHandler, CallbackContext
 
 
 # define a function to get the user's language preference
@@ -49,18 +49,16 @@ async def generate_config(update: Update, context: ContextTypes.DEFAULT_TYPE):
     with open(f'{language}_strings.json', 'r') as f:
         strings = json.load(f)
 
-    # create InlineKeyboardMarkup with two buttons
-    button1_text = "1 Week - $1"
-    button1_callback_data = "product_a"
-    button2_text = "1 Month - $3"
-    button2_callback_data = "product_b"
-    markup = InlineKeyboardMarkup([[InlineKeyboardButton(button1_text, callback_data=button1_callback_data)],
-                                   [InlineKeyboardButton(button2_text, callback_data=button2_callback_data)]])
+    # create InlineKeyboardMarkup with two buttons for the user to select product
+    buttons = [[InlineKeyboardButton(text="1 Week - $1", callback_data="product_a")],
+               [InlineKeyboardButton(text="1 Month - $3", callback_data="product_b")]]
+
+    products = InlineKeyboardMarkup(buttons)
 
     # send message to the user with the two products to choose from
     chat_id = update.message.chat_id
     description = strings['description']
-    await context.bot.send_message(chat_id, description, reply_markup=markup)
+    await context.bot.send_message(chat_id, description, reply_markup=products)
 
 
 # define a function that handles user's callback query when a product is selected
@@ -112,14 +110,14 @@ async def precheckout_callback(update: Update, context: ContextTypes.DEFAULT_TYP
         await update.pre_checkout_query.answer(ok=False, error_message="Invalid invoice payload")
         return
 
-    # answers the PreQecheckoutQuery
+    # answers the PreCheckoutQuery
     query = update.pre_checkout_query
     # check the invoice payload, is it from your bot?
-    if query.invoice_payload != "Custom-Payload":
-        # answer False PreCheckoutQuery
-        await query.answer(ok=False, error_message="Something went wrong...")
-    else:
+    if query.invoice_payload == "1 Week" or query.invoice_payload == "1 Month":
         await query.answer(ok=True)
+    # answer False PreCheckoutQuery
+    else:
+        await query.answer(ok=False, error_message="Something went wrong...")
 
     # store the selected plan and duration in the user data
     user_data = context.user_data
@@ -143,36 +141,109 @@ async def successful_payment_callback(update: Update, context: ContextTypes.DEFA
     await generate_config_success(update, context)
 
 
-# define the command handler for generating OpenVPN client config files
+# define a function to handle user input for choosing a VPN protocol
 async def generate_config_success(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    # get the user's language preference
+    # language = await get_language(update, context)
+
+    # load text based on language preference
+    # with open(f'{language}_strings.json', 'r') as f:
+    # strings = json.load(f)
+
+    # create InlineKeyboardMarkup with buttons for the user to select OpenVPN or Wireguard
+    buttons = [
+        [
+            InlineKeyboardButton(text='OpenVPN', callback_data='openvpn'),
+            InlineKeyboardButton(text='WireGuard', callback_data='wireguard')
+        ],
+        [InlineKeyboardButton("Help me choose", callback_data='suggest')],
+    ]
+    protocols = InlineKeyboardMarkup(buttons)
+
+    # ask the user whether they want to use OpenVPN or Wireguard
+    chat_id = update.message.chat_id
+    question = 'Do you want to use an OpenVPN server or a WireGuard server?'
+    await context.bot.send_message(chat_id, text=question, reply_markup=protocols)
+
+
+# define the command handler for generating client config files
+async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    choice = query.data
+    chat_id = query.message.chat_id
+
     # get the user ID from the Telegram message
-    user_id = update.message.from_user.id
+    user_id = query.from_user.id
 
     # generate a unique client name based on the user ID
     client_name = f"user_{user_id}"
-
-    # define the path for the client config file
-    client_config_path = f"/home/sammy/ovpns/{client_name}.ovpn"
 
     # get the selected plan and duration days from the user data
     user_data = context.user_data
     selected_plan = user_data.get('selected_plan')
     duration_days = user_data.get('duration_days')
 
-    # execute the OpenVPN script to generate the client config file
-    # note: this command requires root privileges
-    subprocess.run(["pivpn", "add", "nopass", "-n", client_name, "-d", str(duration_days)])
+    if choice == 'suggest':
+        # suggest the VPN protocol to use
+        suggestion = "To keep your online activity private and secure, we offer a choice of two VPN protocols: " \
+                     "OpenVPN and WireGuard.\n\nOpenVPN is a versatile choice that works well with most devices, " \
+                     "and is highly regarded for its reliability and security.\n\nWireGuard, on the other hand, " \
+                     "is known for its speed and efficiency, making it an excellent option for mobile users who need " \
+                     "fast, seamless connections."
+        await context.bot.send_message(chat_id, text=suggestion)
 
-    # alternative method for running the sudo command using pexpect:
-    password = "your_password"  # change this to your sudo password
-    child = pexpect.spawn(f"sudo pivpn add nopass -n {client_name} -d {duration_days}")
-    child.expect("password")
-    child.sendline(password)
-    child.expect(pexpect.EOF)
+    elif choice == 'openvpn':
+        # generate client config file for OpenVPN
+        # note: this command requires root privileges
+        return_code = subprocess.run(
+            ["pivpn", "ovpn", "add", "nopass", "-n", client_name, "-d", str(duration_days)]).returncode
+        if return_code != 0:
+            await update.message.reply_text("Failed to generate client configuration file. Please try again later.")
+        return
 
-    # open the client config file and send it to the user
-    with open(client_config_path, "rb") as f:
-        await update.message.reply_document(document=f, filename=f"{client_name}.ovpn")
+        # alternative method for running the sudo command using pexpect:
+        password = "your_password"  # change this to your sudo password
+        child = pexpect.spawn(f"sudo pivpn ovpn add nopass -n {client_name} -d {duration_days}")
+        child.expect("password")
+        child.sendline(password)
+        child.expect(pexpect.EOF)
+
+        # open the client config file and send it to the user
+        with open("/home/sammy/ovpns/{client_name}.ovpn", "rb") as f:
+            await update.message.reply_document(document=f, filename=f"{client_name}.ovpn")
+
+    elif choice == 'wireguard':
+        # generate client config file for WireGuard
+        # note: this command requires root privileges
+        return_code = subprocess.run(
+            ["pivpn", "wg", "add", "-n", client_name]).returncode
+        if return_code != 0:
+            await update.message.reply_text("Failed to generate client configuration file. Please try again later.")
+        return
+
+        # alternative method for running the sudo command using pexpect:
+        password = "your_password"  # change this to your sudo password
+        child = pexpect.spawn(f"sudo pivpn wg add -n {client_name}")
+        child.expect("password")
+        child.sendline(password)
+        child.expect(pexpect.EOF)
+
+        # set expiration timestamp (only for Wireguard config)
+        expiry_secs = duration_days * 86400
+        expiry_timestamp = int(time.time()) + expiry_secs
+        config_file = client_config_path
+        post_up = f'PostUp = echo "Expires = {expiry_timestamp}" >> {config_file}'
+
+        # add PostUp command to client configuration file
+        with open(config_file, 'a') as f:
+            f.write('\n' + post_up)
+
+        # open the client config file and send it to the user
+        with open("/home/sammy/configs/{client_name}.conf", "rb") as f:
+            await update.message.reply_document(document=f, filename=f"{client_name}.conf")
+    else:
+        # handle invalid button press
+        await context.bot.send_message(chat_id, "Invalid selection. Please try again.")
 
     # send a message to the user confirming the duration of their plan
     if selected_plan is not None:
@@ -180,8 +251,10 @@ async def generate_config_success(update: Update, context: ContextTypes.DEFAULT_
         await update.message.reply_text(duration_message)
 
     # delete the user data to prevent resending the same configuration file
-    del user_data['selected_plan']
-    del user_data['duration_days']
+    if 'selected_plan' in user_data:
+        del user_data['selected_plan']
+    if 'duration_days' in user_data:
+        del user_data['duration_days']
 
 
 # define a function to handle the /start command
@@ -397,8 +470,9 @@ def main():
     application.add_handler(CommandHandler("whatsnew", whatsnew))
 
     # adds a callback query handler for when the user selects a product to purchase
-    application.add_handler(CallbackQueryHandler(select_product))
+    application.add_handler(CallbackQueryHandler(select_product, pattern='^(product_a|product_b)$'))
 
+    application.add_handler(CallbackQueryHandler(button_callback, pattern='^(openvpn|wireguard|suggest)$'))
     # add a message handler to handle unknown commands or messages
     application.add_handler(MessageHandler(filters.ALL, unknown))
 
