@@ -1,0 +1,16 @@
+{
+    "OpenVPN": {
+        "Windows": "https://openvpn.net/downloads/openvpn-connect-v3-windows.msi",
+        "macOS": "https://openvpn.net/downloads/openvpn-connect-v3-macos.dmg",
+        "Linux": "https://openvpn.net/openvpn-client-for-linux/",
+        "Android": "https://play.google.com/store/apps/details?id=net.openvpn.openvpn",
+        "iOS": "https://itunes.apple.com/us/app/openvpn-connect/id590379981?mt=8"
+    },
+    "WireGuard": {
+        "Windows": "https://download.wireguard.com/windows-client/wireguard-installer.exe",
+        "macOS": "https://itunes.apple.com/us/app/wireguard/id1451685025?ls=1&mt=12",
+        "Linux": "sudo apt install wireguard",
+        "Android": "https://play.google.com/store/apps/details?id=com.wireguard.android",
+        "iOS": "https://itunes.apple.com/us/app/wireguard/id1441195209?ls=1&mt=8"
+    }
+}
