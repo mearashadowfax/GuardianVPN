@@ -2,7 +2,10 @@
 import subprocess  # for running shell commands
 import datetime  # for getting the current date/time
 import json  # for working with JSON data
+import time  # for working with time-related operations
 import pexpect  # for interacting with command line prompts
+import logging  # for logging to help debug and troubleshoot the program
+from urllib.parse import quote
 
 # import the Telegram API token from config.py
 from config import TELEGRAM_API_TOKEN
@@ -17,7 +20,17 @@ PAYMENT_PROVIDER_TOKEN = PAYMENT_PROVIDER_TOKEN
 # import the required Telegram modules
 from telegram import Update, LabeledPrice, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 from telegram.ext import CallbackQueryHandler, CommandHandler, MessageHandler, filters, ApplicationBuilder, \
-    ContextTypes, PreCheckoutQueryHandler, CallbackContext
+    ContextTypes, PreCheckoutQueryHandler, CallbackContext, ConversationHandler
+from telegram.constants import ParseMode
+
+# enable logging
+logging.basicConfig(level=logging.INFO)
+
+START, END = range(2)
+APP_OPTIONS = ["OpenVPN", "WireGuard"]
+APP_LETTERS = ["O", "W"]
+OS_OPTIONS = ["Windows", "macOS", "Linux", "Android", "iOS"]
+OS_LETTERS = ["Wi", "M", "L", "A", "I"]
 
 
 # define a function to get the user's language preference
@@ -143,13 +156,6 @@ async def successful_payment_callback(update: Update, context: ContextTypes.DEFA
 
 # define a function to handle user input for choosing a VPN protocol
 async def generate_config_success(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # get the user's language preference
-    # language = await get_language(update, context)
-
-    # load text based on language preference
-    # with open(f'{language}_strings.json', 'r') as f:
-    # strings = json.load(f)
-
     # create InlineKeyboardMarkup with buttons for the user to select OpenVPN or Wireguard
     buttons = [
         [
@@ -166,8 +172,15 @@ async def generate_config_success(update: Update, context: ContextTypes.DEFAULT_
     await context.bot.send_message(chat_id, text=question, reply_markup=protocols)
 
 
-# define the command handler for generating client config files
+# callback function after choosing the VPN protocol
 async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    # get the user's language preference
+    language = context.user_data.get('language', 'en')
+
+    # load text based on language preference
+    with open(f'{language}_strings.json', 'r') as f:
+        strings = json.load(f)
+
     query = update.callback_query
     choice = query.data
     chat_id = query.message.chat_id
@@ -185,12 +198,8 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if choice == 'suggest':
         # suggest the VPN protocol to use
-        suggestion = "To keep your online activity private and secure, we offer a choice of two VPN protocols: " \
-                     "OpenVPN and WireGuard.\n\nOpenVPN is a versatile choice that works well with most devices, " \
-                     "and is highly regarded for its reliability and security.\n\nWireGuard, on the other hand, " \
-                     "is known for its speed and efficiency, making it an excellent option for mobile users who need " \
-                     "fast, seamless connections."
-        await context.bot.send_message(chat_id, text=suggestion)
+        differences = strings['differences']
+        await context.bot.send_message(chat_id, differences)
 
     elif choice == 'openvpn':
         # generate client config file for OpenVPN
@@ -198,19 +207,23 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return_code = subprocess.run(
             ["pivpn", "ovpn", "add", "nopass", "-n", client_name, "-d", str(duration_days)]).returncode
         if return_code != 0:
-            await update.message.reply_text("Failed to generate client configuration file. Please try again later.")
-        return
+            await update.message.reply_text((strings['config_generation_error']))
+        else:
+            # alternative method for running the sudo command using pexpect:
+            # password = "your_password"  # change this to your sudo password
+            # child = pexpect.spawn(f"sudo pivpn ovpn add nopass -n {client_name} -d {duration_days}")
+            # child.expect("password")
+            # child.sendline(password)
+            # child.expect(pexpect.EOF)
+            # check for any error messages
+            # if child.expect(["Error", "Failed", pexpect.EOF]) < 2:
+            # an error message was found
+            # await update.message.reply_text((strings['config_generation_error']))
+            # else:
 
-        # alternative method for running the sudo command using pexpect:
-        password = "your_password"  # change this to your sudo password
-        child = pexpect.spawn(f"sudo pivpn ovpn add nopass -n {client_name} -d {duration_days}")
-        child.expect("password")
-        child.sendline(password)
-        child.expect(pexpect.EOF)
-
-        # open the client config file and send it to the user
-        with open("/home/sammy/ovpns/{client_name}.ovpn", "rb") as f:
-            await update.message.reply_document(document=f, filename=f"{client_name}.ovpn")
+            # open the client config file and send it to the user
+            with open("/home/sammy/ovpns/{client_name}.ovpn", "rb") as f:
+                await update.message.reply_document(document=f, filename=f"{client_name}.ovpn")
 
     elif choice == 'wireguard':
         # generate client config file for WireGuard
@@ -218,29 +231,35 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return_code = subprocess.run(
             ["pivpn", "wg", "add", "-n", client_name]).returncode
         if return_code != 0:
-            await update.message.reply_text("Failed to generate client configuration file. Please try again later.")
-        return
+            await update.message.reply_text((strings['config_generation_error']))
+        else:
 
-        # alternative method for running the sudo command using pexpect:
-        password = "your_password"  # change this to your sudo password
-        child = pexpect.spawn(f"sudo pivpn wg add -n {client_name}")
-        child.expect("password")
-        child.sendline(password)
-        child.expect(pexpect.EOF)
+            # alternative method for running the sudo command using pexpect:
+            # password = "your_password"  # change this to your sudo password
+            # child = pexpect.spawn(f"sudo pivpn wg add -n {client_name}")
+            # child.expect("password")
+            # child.sendline(password)
+            # child.expect(pexpect.EOF)
+            # check for any error messages
+            # if child.expect(["Error", "Failed", pexpect.EOF]) < 2:
+            # an error message was found
+            # await update.message.reply_text((strings['config_generation_error']))
+            # else:
 
-        # set expiration timestamp (only for Wireguard config)
-        expiry_secs = duration_days * 86400
-        expiry_timestamp = int(time.time()) + expiry_secs
-        config_file = client_config_path
-        post_up = f'PostUp = echo "Expires = {expiry_timestamp}" >> {config_file}'
+            # set expiration timestamp (only for Wireguard config)
+            expiry_secs = duration_days * 86400
+            expiry_timestamp = int(time.time()) + expiry_secs
+            config_file = "/home/sammy/configs/{client_name}.conf"
+            post_up = f'PostUp = echo "Expires = {expiry_timestamp}" >> {config_file}'
 
-        # add PostUp command to client configuration file
-        with open(config_file, 'a') as f:
-            f.write('\n' + post_up)
+            # add PostUp command to client configuration file
+            with open(config_file, 'a') as f:
+                f.write('\n' + post_up)
 
-        # open the client config file and send it to the user
-        with open("/home/sammy/configs/{client_name}.conf", "rb") as f:
-            await update.message.reply_document(document=f, filename=f"{client_name}.conf")
+            # open the client config file and send it to the user
+            with open("/home/sammy/configs/{client_name}.conf", "rb") as f:
+                await update.message.reply_document(document=f, filename=f"{client_name}.conf")
+
     else:
         # handle invalid button press
         await context.bot.send_message(chat_id, "Invalid selection. Please try again.")
@@ -251,10 +270,8 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(duration_message)
 
     # delete the user data to prevent resending the same configuration file
-    if 'selected_plan' in user_data:
-        del user_data['selected_plan']
-    if 'duration_days' in user_data:
-        del user_data['duration_days']
+    context.user_data.pop('selected_plan', None)
+    context.user_data.pop('duration_days', None)
 
 
 # define a function to handle the /start command
@@ -370,7 +387,7 @@ async def support(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # define a function to handle the /tutorial command
 async def tutorial(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # get user's language preference from user_data dictionary
-    language = context.user_data.get('language', 'en')
+    language = await get_language(update, context)
 
     # load text based on language preference
     with open(f'{language}_strings.json', 'r') as f:
@@ -387,6 +404,13 @@ last_update_date = None
 
 # define a function to handle the /whatsnew command
 async def whatsnew(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    # get user's language preference from user_data dictionary
+    language = await get_language(update, context)
+
+    # load text based on language preference
+    with open(f'{language}_strings.json', 'r') as f:
+        strings = json.load(f)
+
     global last_update_date
 
     # set the current date as the latest update date
@@ -407,42 +431,65 @@ async def whatsnew(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text("No new updates since the last time you checked.")
     else:
         # send a message with all updates and improvements
-        await update.message.reply_text(
-            "All updates and improvements:\n"
-            "• Added support for French, German, Russian, and Spanish languages based on user's Telegram language "
-            "preference\n"
-            "• Fixed issue with user authentication and handling the /getapp command\n"
-            "• Increased server speed and reliability\n"
-            "• Bug fixes and performance improvements\n"
-        )
+        all_updates = strings['all_updates']
+        await update.message.reply_text(all_updates)
 
     # update the last update date
     last_update_date = latest_update_date
 
 
-# define a function to handle the /getapp command
 async def getapp(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # get user's language preference from user_data dictionary
-    language = context.user_data.get('language', 'en')
+    keyboard = [
+        [InlineKeyboardButton(option, callback_data=letter) for option, letter in zip(APP_OPTIONS, APP_LETTERS)]]
+    get_app = InlineKeyboardMarkup(keyboard)
 
-    # load text based on language preference
-    with open(f'{language}_strings.json', 'r') as f:
-        strings = json.load(f)
+    await update.message.reply_text("Please select the VPN app you want to download:", reply_markup=get_app)
 
-    # provide all the download links to the user
-    download_links = [
-        "Windows: https://openvpn.net/downloads/openvpn-connect-v3-windows.msi",
-        "MacOS: https://openvpn.net/downloads/openvpn-connect-v3-macos.dmg",
-        "Linux: https://openvpn.net/openvpn-client-for-linux/",
-        "Android: https://play.google.com/store/apps/details?id=net.openvpn.openvpn",
-        "iOS: https://itunes.apple.com/us/app/openvpn-connect/id590379981?mt=8"
-    ]
-    # join the download links into a single string
-    download_links_str = "\n".join(download_links)
+    return START
 
-    # send a message back to the user with all the download links
-    download_links_message = strings['download_links_message']
-    await update.message.reply_text(f"{download_links_message}{download_links_str}")
+
+async def handle_os_selection(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+
+    selected_app = context.user_data.get('selected_app')
+
+    if not selected_app:
+        # If selected_app is not set, we need to retrieve it from the callback query
+        selected_app = query.data
+        context.user_data['selected_app'] = selected_app
+
+    keyboard = [[InlineKeyboardButton(option, callback_data=option) for option in OS_OPTIONS]]
+    os_selection = InlineKeyboardMarkup(keyboard)
+    await query.edit_message_text(text="Choose your operating system:", reply_markup=os_selection)
+
+    return END
+
+
+async def get_download_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+
+    selected_os = context.user_data.get('selected_os')
+
+    if not selected_os:
+        # If selected_os is not set, we need to retrieve it from the callback query
+        selected_os = query.data
+        context.user_data['selected_os'] = selected_os
+
+    selected_app = context.user_data.get('selected_app')
+
+    if not selected_app or not selected_os:
+        await query.edit_message_text(text="Oops, something went wrong. Please try again.")
+        return ConversationHandler.END
+
+    with open('download_links.json') as f:
+        data = json.load(f)
+    url = data[selected_app][selected_os]
+    sanitized_url = quote(url, safe=':/')
+    await query.edit_message_text(text=f"Here's your download link: {sanitized_url}")
+
+    return ConversationHandler.END
 
 
 # handle unknown command
@@ -462,17 +509,31 @@ def main():
     application.add_handler(CommandHandler("about", about))
     application.add_handler(CommandHandler("status", status))
     application.add_handler(CommandHandler("limitations", limitations))
-    application.add_handler(CommandHandler("getapp", getapp))
     application.add_handler(CommandHandler("privacy", privacy))
     application.add_handler(CommandHandler("tutorial", tutorial))
     application.add_handler(CommandHandler("terms", terms))
     application.add_handler(CommandHandler("support", support))
     application.add_handler(CommandHandler("whatsnew", whatsnew))
 
+    # Define the ConversationHandler
+    conv_handler = ConversationHandler(
+        entry_points=[CommandHandler("getapp", getapp)],
+        states={
+            START: [CallbackQueryHandler(handle_os_selection, pattern=f"^{letter}$")
+                    for letter in APP_LETTERS],
+            END: [CallbackQueryHandler(get_download_link, pattern=f"^{letter}$")
+                  for letter in OS_LETTERS],
+        },
+        fallbacks=[],
+        allow_reentry=True)
+
+    # Add ConversationHandler to application that will be used for handling updates
+    application.add_handler(conv_handler)
     # adds a callback query handler for when the user selects a product to purchase
     application.add_handler(CallbackQueryHandler(select_product, pattern='^(product_a|product_b)$'))
 
     application.add_handler(CallbackQueryHandler(button_callback, pattern='^(openvpn|wireguard|suggest)$'))
+
     # add a message handler to handle unknown commands or messages
     application.add_handler(MessageHandler(filters.ALL, unknown))
 
