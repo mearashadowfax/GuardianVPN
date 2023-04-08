@@ -30,19 +30,19 @@ The Payment options feature enables users to purchase VPN access passes for a se
 Once the bot is running, users can interact with it by sending commands via Telegram. The available commands are:  
 • `/about`: Get information about the bot and its features  
 • `/generate_config`: Generate a new configuration file  
-• `/getapp`: Get a download link for both OpenVPN and Wireguard apps
+• `/getapp`: Get a download link for both OpenVPN and Wireguard apps  
 • `/limitations`: Learn about bot's limitations  
 • `/privacy`: View privacy policy  
 • `/start`: Start the bot and get a welcome message  
 • `/status`: Check the status of VPN server  
 • `/support`: Contact us  
 • `/terms`: Read our terms and conditions  
-• `/tutorial`: Instructions on how to use a VPN configuration files 
+• `/tutorial`: Instructions on how to use a VPN configuration files  
 • `/whatsnew`: Latest updates and improvements  
 
 ## Future Development
 Here are some ideas for potential future developments to this project:  
-• ~~Add support for the Wireguard VPN protocol~~ Done  
+• ~~Add support for the Wireguard VPN protocol~~ (In progress)  
 • Allow users to choose a specific country for their VPN connection
 
 ## Contributions
