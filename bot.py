@@ -5,7 +5,6 @@ import json  # for working with JSON data
 import time  # for working with time-related operations
 import pexpect  # for interacting with command line prompts
 import logging  # for logging to help debug and troubleshoot the program
-from urllib.parse import quote
 
 # import the Telegram API token from config.py
 from config import TELEGRAM_API_TOKEN
@@ -18,19 +17,12 @@ from config import PAYMENT_PROVIDER_TOKEN
 PAYMENT_PROVIDER_TOKEN = PAYMENT_PROVIDER_TOKEN
 
 # import the required Telegram modules
-from telegram import Update, LabeledPrice, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
+from telegram import Update, LabeledPrice, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import CallbackQueryHandler, CommandHandler, MessageHandler, filters, ApplicationBuilder, \
-    ContextTypes, PreCheckoutQueryHandler, CallbackContext, ConversationHandler
-from telegram.constants import ParseMode
+    ContextTypes, PreCheckoutQueryHandler, ConversationHandler
 
 # enable logging
 logging.basicConfig(level=logging.INFO)
-
-START, END = range(2)
-APP_OPTIONS = ["OpenVPN", "WireGuard"]
-APP_LETTERS = ["O", "W"]
-OS_OPTIONS = ["Windows", "macOS", "Linux", "Android", "iOS"]
-OS_LETTERS = ["Wi", "M", "L", "A", "I"]
 
 
 # define a function to get the user's language preference
@@ -438,56 +430,68 @@ async def whatsnew(update: Update, context: ContextTypes.DEFAULT_TYPE):
     last_update_date = latest_update_date
 
 
+# stages
+START, END = range(2)
+# callback data
+APP_OPTIONS = ["OpenVPN", "WireGuard"]
+APP_LETTERS = ["O", "W"]
+OS_OPTIONS = ["Windows", "macOS", "Linux", "Android", "iOS"]
+OS_LETTERS = ["Wi", "M", "L", "A", "I"]
+
+
+# function to get app selection from user
 async def getapp(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    # set up the keyboard with app options and their assigned letters (callback data)
     keyboard = [
         [InlineKeyboardButton(option, callback_data=letter) for option, letter in zip(APP_OPTIONS, APP_LETTERS)]]
-    get_app = InlineKeyboardMarkup(keyboard)
 
+    get_app = InlineKeyboardMarkup(keyboard)
+    # ask user to select an app
     await update.message.reply_text("Please select the VPN app you want to download:", reply_markup=get_app)
 
     return START
 
 
+# function to handle OS selection from user
 async def handle_os_selection(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    # get CallbackQuery from Update
     query = update.callback_query
     await query.answer()
 
-    selected_app = context.user_data.get('selected_app')
+    selected_app = query.data
+    context.user_data['selected_app'] = selected_app
+    # set up the keyboard with OS options and their assigned letters (callback data)
+    keyboard = [
+        [InlineKeyboardButton(option, callback_data=letter) for option, letter in zip(OS_OPTIONS, OS_LETTERS)]]
 
-    if not selected_app:
-        # If selected_app is not set, we need to retrieve it from the callback query
-        selected_app = query.data
-        context.user_data['selected_app'] = selected_app
-
-    keyboard = [[InlineKeyboardButton(option, callback_data=option) for option in OS_OPTIONS]]
     os_selection = InlineKeyboardMarkup(keyboard)
+    # ask user to select an OS
     await query.edit_message_text(text="Choose your operating system:", reply_markup=os_selection)
 
     return END
 
 
+# function to get download link based on user's selections
 async def get_download_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
 
-    selected_os = context.user_data.get('selected_os')
-
-    if not selected_os:
-        # If selected_os is not set, we need to retrieve it from the callback query
-        selected_os = query.data
-        context.user_data['selected_os'] = selected_os
+    selected_os = query.data
+    context.user_data['selected_os'] = selected_os
 
     selected_app = context.user_data.get('selected_app')
+    selected_os = context.user_data.get('selected_os')
 
     if not selected_app or not selected_os:
         await query.edit_message_text(text="Oops, something went wrong. Please try again.")
         return ConversationHandler.END
 
+    # load the download_links.json file and get the download link based on the user's app and OS selections
     with open('download_links.json') as f:
         data = json.load(f)
     url = data[selected_app][selected_os]
-    sanitized_url = quote(url, safe=':/')
-    await query.edit_message_text(text=f"Here's your download link: {sanitized_url}")
+    # display the download link to the user
+    await query.edit_message_text(text=f"Here's your download link: {url}")
 
     return ConversationHandler.END
 
@@ -515,23 +519,25 @@ def main():
     application.add_handler(CommandHandler("support", support))
     application.add_handler(CommandHandler("whatsnew", whatsnew))
 
-    # Define the ConversationHandler
+    # define the ConversationHandler
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler("getapp", getapp)],
         states={
-            START: [CallbackQueryHandler(handle_os_selection, pattern=f"^{letter}$")
+            START: [CallbackQueryHandler(handle_os_selection, pattern=f'^{letter}$')
                     for letter in APP_LETTERS],
-            END: [CallbackQueryHandler(get_download_link, pattern=f"^{letter}$")
+            END: [CallbackQueryHandler(get_download_link, pattern=f'^{letter}$')
                   for letter in OS_LETTERS],
         },
         fallbacks=[],
         allow_reentry=True)
 
-    # Add ConversationHandler to application that will be used for handling updates
+    # add ConversationHandler to application that will be used for handling updates
     application.add_handler(conv_handler)
-    # adds a callback query handler for when the user selects a product to purchase
+
+    # add a callback query handler for when the user selects a product to purchase
     application.add_handler(CallbackQueryHandler(select_product, pattern='^(product_a|product_b)$'))
 
+    # add a callback query handler for when the user selects a VPN protocol
     application.add_handler(CallbackQueryHandler(button_callback, pattern='^(openvpn|wireguard|suggest)$'))
 
     # add a message handler to handle unknown commands or messages
