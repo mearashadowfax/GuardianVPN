@@ -2,16 +2,16 @@
 
 ![GuardianVPN](https://user-images.githubusercontent.com/125820963/227031972-c2d5c1ba-9b0d-4b47-9860-c3abc8a0d392.png)
 
-This project is a Telegram Bot that allows users to connect to an OpenVPN server and generate configuration files via a Telegram Bot. It also includes some additional command handlers to provide information about the VPN service.
+The GuardianVPN Telegram Bot allows users to connect to OpenVPN and WireGuard servers, generate configuration files, and purchase VPN access passes for a selected duration using their preferred payment method.
 
 ## Features
 • Generate VPN configuration files with ease via Telegram Bot  
-• Connect to OpenVPN server  
-• Additional command handlers to provide information about the VPN service  
-• Payment options to purchase VPN access passes for a selected duration
+• Connect to OpenVPN and WireGuard servers  
+• Payment options to purchase VPN access passes for a selected duration  
+• Additional command handlers to provide information about the VPN service
 
 ## Installation
-1. Create a new Telegram bot using BotFather:  
+1. Create a new Telegram bot using [BotFather](https://t.me/BotFather):  
     • Open Telegram and search for BotFather  
     • Type `/start` to start the conversation with BotFather  
     • Type `/newbot` and follow the instructions to create a new bot  
@@ -30,19 +30,19 @@ The Payment options feature enables users to purchase VPN access passes for a se
 Once the bot is running, users can interact with it by sending commands via Telegram. The available commands are:  
 • `/about`: Get information about the bot and its features  
 • `/generate_config`: Generate a new configuration file  
-• `/getapp`: Get a download link for the OpenVPN app  
+• `/getapp`: Get a download link for both OpenVPN and Wireguard apps
 • `/limitations`: Learn about bot's limitations  
 • `/privacy`: View privacy policy  
 • `/start`: Start the bot and get a welcome message  
 • `/status`: Check the status of VPN server  
 • `/support`: Contact us  
 • `/terms`: Read our terms and conditions  
-• `/tutorial`: Instructions on how to use an OpenVPN config file with the OpenVPN app  
+• `/tutorial`: Instructions on how to use a VPN configuration files 
 • `/whatsnew`: Latest updates and improvements  
 
 ## Future Development
 Here are some ideas for potential future developments to this project:  
-• Add support for the Wireguard VPN protocol  
+• ~~Add support for the Wireguard VPN protocol~~ Done  
 • Allow users to choose a specific country for their VPN connection
 
 ## Contributions
