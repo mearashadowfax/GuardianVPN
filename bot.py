@@ -108,6 +108,7 @@ async def precheckout_callback(update: Update, context: ContextTypes.DEFAULT_TYP
     # extract the invoice payload
     invoice_payload = update.pre_checkout_query.invoice_payload
     selected_plan = None
+    duration_days = None
 
     # check which plan was selected and set the duration accordingly
     if "1 Week" in invoice_payload:
@@ -116,12 +117,6 @@ async def precheckout_callback(update: Update, context: ContextTypes.DEFAULT_TYP
     elif "1 Month" in invoice_payload:
         duration_days = 30
         selected_plan = "1 Month"
-    else:
-        # invalid invoice payload
-        await update.pre_checkout_query.answer(
-            ok=False, error_message="Invalid invoice payload"
-        )
-        return
 
     # answers the PreCheckoutQuery
     query = update.pre_checkout_query
@@ -204,9 +199,6 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await openvpn_callback(update, context)
     elif choice == "wireguard":
         await wireguard_callback(update, context)
-    else:
-        # handle invalid button press
-        await context.bot.send_message(chat_id, "Invalid selection. Please try again.")
 
     # send a message to the user confirming the duration of their plan
     if selected_plan is not None:
@@ -249,7 +241,7 @@ async def openvpn_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         ]
     ).returncode
     if return_code != 0:
-        await update.message.reply_text(strings["config_generation_error"])
+        await context.bot.send_message(strings["config_generation_error"])
     # else:
     # alternative method for running the sudo command using pexpect:
     # password = "your_password"  # change this to your sudo password
