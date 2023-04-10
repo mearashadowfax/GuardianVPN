@@ -9,7 +9,7 @@ import logging  # for logging to help debug and troubleshoot the program
 # import the Telegram API token from config.py
 from config import TELEGRAM_API_TOKEN
 
-telegram_api_token = TELEGRAM_API_TOKEN
+TELEGRAM_API_TOKEN = TELEGRAM_API_TOKEN
 
 # import the Payment provider token from config.py
 from config import PAYMENT_PROVIDER_TOKEN
@@ -569,7 +569,7 @@ async def unknown(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 def main():
     # set Telegram bot
-    application = ApplicationBuilder().token(telegram_api_token).build()
+    application = ApplicationBuilder().token(TELEGRAM_API_TOKEN).build()
 
     # add the command handlers
     application.add_handler(CommandHandler("generate_config", generate_config))
