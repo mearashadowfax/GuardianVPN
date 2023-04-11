@@ -246,18 +246,12 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         differences = strings["differences"]
         await context.bot.send_message(chat_id, differences)
 
-    elif choice == "openvpn":
-        await openvpn_callback(update, context)
-        # send a message to the user confirming the duration of their plan
-        duration_message = (
-            f"Your GuardianVPN service will be active for {selected_plan}."
-        )
-        await context.bot.send_message(chat_id, duration_message)
-        # delete the inline keyboard to prevent the user from clicking again
-        await context.bot.delete_message(chat_id, query.message.message_id)
+    else:
+        # call the corresponding handler function
+        handler_map = {"openvpn": openvpn_callback, "wireguard": wireguard_callback}
+        handler = handler_map.get(choice)
+        await handler(update, context)
 
-    elif choice == "wireguard":
-        await wireguard_callback(update, context)
         # send a message to the user confirming the duration of their plan
         duration_message = (
             f"Your GuardianVPN service will be active for {selected_plan}."
