@@ -87,20 +87,19 @@ async def display_message(
     with open(f"{language}_strings.json", "r") as f:
         strings = json.load(f)
 
-    # split the message into smaller parts
-    message_parts = strings[message].split(delimiter)
+    # split the message into sentences using the custom delimiter
+    sentences = strings[message].split(delimiter)
 
-    # send the first part of the message as a new message
-    text = message_parts[0]
+    # send the first sentence as a new message
+    text = sentences[0]
     message = await update.message.reply_text(text)
 
-    # update the message with each subsequent part
-    for part in message_parts[1:]:
-        text += delimiter + part
+    # loop through each sentence and gradually build up the message, editing the original message with a delay in
+    # between
+    for sentence in sentences[1:]:
+        text += delimiter + sentence
         await message.edit_text(text)
-        time.sleep(
-            1
-        )  # wait for 1 second before updating the message with the next part
+        await asyncio.sleep(0.5)
 
 
 async def generate_config(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -425,7 +424,7 @@ async def wireguard_callback(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
 # call the display_message function for the /start command
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await display_message(update, context, "start_message", "\n\n")
+    await display_message(update, context, "start_message", ".")
 
 
 # send a typing indicator in the chat
@@ -444,37 +443,37 @@ async def status(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # call the display_message function for the /about command
 async def about(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await display_message(update, context, "about_message", "\n\n")
+    await display_message(update, context, "about_message", ".")
 
 
 # call the display_message function for the /limitations command
 async def limitations(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await display_message(update, context, "limitations_message", "\n\n")
+    await display_message(update, context, "limitations_message", "• ")
 
 
 # call the display_message function for the /privacy command
 async def privacy(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await display_message(update, context, "privacy_message", "\n\n")
+    await display_message(update, context, "privacy_message", "• ")
 
 
 # call the display_message function for the /help command
 async def help_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await display_message(update, context, "help_message", "\n\n")
+    await display_message(update, context, "help_message", "/")
 
 
 # call the display_message function for the /terms command
 async def terms(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await display_message(update, context, "terms_message", "\n\n")
+    await display_message(update, context, "terms_message", "•")
 
 
 # call the display_message function for the /support command
 async def support(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await display_message(update, context, "support_message", "\n\n")
+    await display_message(update, context, "support_message", ".")
 
 
 # call the display_message function for the /tutorial command
 async def tutorial(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await display_message(update, context, "tutorial_message", "\n\n")
+    await display_message(update, context, "tutorial_message", ". ")
 
 
 # define a global variable to store the last update date
