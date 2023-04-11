@@ -17,7 +17,7 @@ The GuardianVPN Telegram Bot allows users to generate configuration files for Op
     • BotFather will provide you with a `TELEGRAM_API_TOKEN`. Save it for later use  
 2. Clone this repository and navigate to the project directory
 3. Install the required dependencies using `pip install -r requirements.txt`
-4. Create a `config.py` file and set the necessary environment variables (`TELEGRAM_API_TOKEN`) 
+4. Create a `config.py` file and set the necessary environment variables (`TELEGRAM_API_TOKEN`, `PAYMENT_PROVIDER_TOKEN`) 
 5. Run `python bot.py` script
 6. Start the bot in Telegram by searching for the bot name and clicking on the `start` button  
 
@@ -40,9 +40,10 @@ Once the bot is running, users can interact with it by sending commands via Tele
 • `/whatsnew`: Latest updates and improvements  
 
 ## Future Development
-Here are some ideas for potential future developments to this project:  
-• ~~Add support for the Wireguard VPN protocol~~ (In progress)  
-• Allow users to choose a specific country for their VPN connection
+Here are some ideas for potential future developments for this project:  
+• Multiple server locations: Allow users to choose from multiple server locations for their VPN connection  
+• Anti-tracking feature: Integrate anti-tracking measures by using Pi-Hole. This will include pre-configured filter lists such as EasyList or NoTrack to deliver a tracking-free VPN service.    
+• User dashboard: Create a customized user dashboard to allow users to manage their subscriptions and settings
 
 ## Contributions
 Contributions to this project are welcome. If you find a bug or have a feature request, please open an issue on the [GitHub repository](https://github.com/mearashadowfax/GuardianVPN/issues). If you'd like to contribute code, please fork the repository and submit a pull request.
