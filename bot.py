@@ -78,7 +78,7 @@ async def get_language(update: Update, context: ContextTypes.DEFAULT_TYPE) -> st
 # define a function to display a message with streaming text
 @send_typing_action
 async def display_message(
-        update: Update, context: ContextTypes.DEFAULT_TYPE, message: str, delimiter: str
+    update: Update, context: ContextTypes.DEFAULT_TYPE, message: str, delimiter: str
 ):
     # get the user's language preference
     language = await get_language(update, context)
@@ -190,7 +190,7 @@ async def precheckout_callback(update: Update, context: ContextTypes.DEFAULT_TYP
 
 # callback function after contacting the payment provider
 async def successful_payment_callback(
-        update: Update, context: ContextTypes.DEFAULT_TYPE
+    update: Update, context: ContextTypes.DEFAULT_TYPE
 ):
     # get the user's language preference
     language = await get_language(update, context)
@@ -250,24 +250,22 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif choice == "openvpn":
         await openvpn_callback(update, context)
         # send a message to the user confirming the duration of their plan
-        if selected_plan is not None:
-            duration_message = (
-                f"Your GuardianVPN service will be active for {selected_plan}."
-            )
-            await context.bot.send_message(chat_id, duration_message)
+        duration_message = (
+            f"Your GuardianVPN service will be active for {selected_plan}."
+        )
+        await context.bot.send_message(chat_id, duration_message)
+        # delete the inline keyboard to prevent the user from clicking again
+        await context.bot.delete_message(chat_id, query.message.message_id)
 
     elif choice == "wireguard":
         await wireguard_callback(update, context)
         # send a message to the user confirming the duration of their plan
-        if selected_plan is not None:
-            duration_message = (
-                f"Your GuardianVPN service will be active for {selected_plan}."
-            )
-            await context.bot.send_message(chat_id, duration_message)
-
-    # delete the user data to prevent resending the same configuration file
-    context.user_data.pop("selected_plan", None)
-    context.user_data.pop("duration_days", None)
+        duration_message = (
+            f"Your GuardianVPN service will be active for {selected_plan}."
+        )
+        await context.bot.send_message(chat_id, duration_message)
+        # delete the inline keyboard to prevent the user from clicking again
+        await context.bot.delete_message(chat_id, query.message.message_id)
 
 
 # send a typing indicator in the chat
@@ -326,6 +324,10 @@ async def openvpn_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 chat_id, document=f, filename=f"{client_name}.ovpn"
             )
 
+    # delete the user data to prevent resending the same configuration file
+    context.user_data.pop("selected_plan", None)
+    context.user_data.pop("duration_days", None)
+
 
 # send a typing indicator in the chat
 @send_upload_document_action
@@ -380,7 +382,7 @@ async def wireguard_callback(update: Update, context: ContextTypes.DEFAULT_TYPE)
             await context.bot.send_document(
                 chat_id, document=f, filename=f"{client_name}.conf"
             )
-        # send a upload photo indicator in the chat
+        # send an upload photo indicator in the chat
         await context.bot.send_chat_action(
             chat_id=update.effective_chat.id, action=ChatAction.UPLOAD_PHOTO
         )
@@ -397,9 +399,28 @@ async def wireguard_callback(update: Update, context: ContextTypes.DEFAULT_TYPE)
                 f"/home/sammy/configs/{client_name}.conf",
             ]
         )
+        # use pexpect to generate the QR code and capture the output
+        # set the path to the qrencode command
+        # qrencode_path = "/usr/bin/qrencode"
+        # specify the path to the directory containing the config files
+        # config_path = "/home/sammy/configs/"
+        # set the parameters for the qrencode command
+        # qrencode_args = ["-t", "png", "-o", f"{config_path}{client_name}.png", "-r", f"{config_path}{
+        # client_name}.conf"]
+        # spawn a child process to execute the qrencode command
+        # child = pexpect.spawn(qrencode_path, qrencode_args)
+        # wait for the command to complete
+        # child.expect(pexpect.EOF)
+        # send the QR code image to Telegram
+        # with open(f"{config_path}{client_name}.png", "rb") as f:
+        # await context.bot.send_photo(chat_id, photo=f)
         # send the QR code image to Telegram
         with open(f"/home/sammy/configs/{client_name}.png", "rb") as f:
             await context.bot.send_photo(chat_id, photo=f)
+
+    # delete the user data to prevent resending the same configuration file
+    context.user_data.pop("selected_plan", None)
+    context.user_data.pop("duration_days", None)
 
 
 # call the display_message function for the /start command
@@ -437,7 +458,7 @@ async def privacy(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 # call the display_message function for the /help command
-async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def help_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await display_message(update, context, "help_message", "\n\n")
 
 
@@ -591,7 +612,7 @@ def main():
         CommandHandler("generate_config_success", generate_config_success)
     )
     application.add_handler(CommandHandler("start", start))
-    application.add_handler(CommandHandler("help", help))
+    application.add_handler(CommandHandler("help", help_message))
     application.add_handler(CommandHandler("about", about))
     application.add_handler(CommandHandler("status", status))
     application.add_handler(CommandHandler("limitations", limitations))
@@ -600,6 +621,14 @@ def main():
     application.add_handler(CommandHandler("terms", terms))
     application.add_handler(CommandHandler("support", support))
     application.add_handler(CommandHandler("whatsnew", whatsnew))
+
+    # add a pre-checkout handler to verify and respond to pre-checkout queries
+    application.add_handler(PreCheckoutQueryHandler(precheckout_callback))
+
+    # add a message handler to handle successful payments and notify the user
+    application.add_handler(
+        MessageHandler(filters.SUCCESSFUL_PAYMENT, successful_payment_callback)
+    )
 
     # define the ConversationHandler
     conv_handler = ConversationHandler(
@@ -633,14 +662,6 @@ def main():
 
     # add a message handler to handle unknown commands or messages
     application.add_handler(MessageHandler(filters.ALL, unknown))
-
-    # add a pre-checkout handler to verify and respond to pre-checkout queries
-    application.add_handler(PreCheckoutQueryHandler(precheckout_callback))
-
-    # add a message handler to handle successful payments and notify the user
-    application.add_handler(
-        MessageHandler(filters.SUCCESSFUL_PAYMENT, successful_payment_callback)
-    )
 
     # start the Telegram bot
     application.run_polling()
