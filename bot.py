@@ -1,10 +1,12 @@
 # import the required modules
+import asyncio  # for asynchronous programming
 import subprocess  # for running shell commands
 import datetime  # for getting the current date/time
 import json  # for working with JSON data
 import time  # for working with time-related operations
 import pexpect  # for interacting with command line prompts
 import logging  # for logging to help debug and troubleshoot the program
+from functools import wraps  # for using function decorators
 
 # import the Telegram API token from config.py
 from config import TELEGRAM_API_TOKEN
@@ -17,6 +19,7 @@ from config import PAYMENT_PROVIDER_TOKEN
 PAYMENT_PROVIDER_TOKEN = PAYMENT_PROVIDER_TOKEN
 
 # import the required Telegram modules
+from telegram.constants import ChatAction
 from telegram import Update, LabeledPrice, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import (
     CallbackQueryHandler,
@@ -33,6 +36,30 @@ from telegram.ext import (
 logging.basicConfig(level=logging.INFO)
 
 
+# define the send_action decorator
+def send_action(action, delay=1):
+    def decorator(func):
+        @wraps(func)
+        async def command_func(update, context, *args, **kwargs):
+            await context.bot.send_chat_action(
+                chat_id=update.effective_message.chat_id, action=action
+            )
+            await asyncio.sleep(delay)  # wait for the specified delay time
+            return await func(update, context, *args, **kwargs)
+
+        return command_func
+
+    return decorator
+
+
+# set the aliases with custom delays
+send_upload_document_action = send_action(ChatAction.UPLOAD_DOCUMENT)
+send_typing_action = send_action(
+    ChatAction.TYPING, delay=1
+)  # change the delay time as needed
+send_upload_photo_action = send_action(ChatAction.UPLOAD_PHOTO)
+
+
 # define a function to get the user's language preference
 async def get_language(update: Update, context: ContextTypes.DEFAULT_TYPE) -> str:
     # define a dictionary that maps Telegram's language codes to your supported languages
@@ -46,6 +73,34 @@ async def get_language(update: Update, context: ContextTypes.DEFAULT_TYPE) -> st
     context.user_data["language"] = language
 
     return language
+
+
+# define a function to display a message with streaming text
+@send_typing_action
+async def display_message(
+        update: Update, context: ContextTypes.DEFAULT_TYPE, message: str, delimiter: str
+):
+    # get the user's language preference
+    language = await get_language(update, context)
+
+    # load text based on language preference
+    with open(f"{language}_strings.json", "r") as f:
+        strings = json.load(f)
+
+    # split the message into smaller parts
+    message_parts = strings[message].split(delimiter)
+
+    # send the first part of the message as a new message
+    text = message_parts[0]
+    message = await update.message.reply_text(text)
+
+    # update the message with each subsequent part
+    for part in message_parts[1:]:
+        text += delimiter + part
+        await message.edit_text(text)
+        time.sleep(
+            1
+        )  # wait for 1 second before updating the message with the next part
 
 
 async def generate_config(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -79,7 +134,7 @@ async def select_product(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # extract the selected product from the callback query data
     product = query.data
 
-    # Check which product is selected and set the corresponding price, title, payload and description
+    # check which product is selected and set the corresponding price, title, payload and description
     if product == "product_a":
         price = [LabeledPrice("1 Week", 1 * 100)]
         title = "VPN Access Pass - 1 Week"
@@ -135,7 +190,7 @@ async def precheckout_callback(update: Update, context: ContextTypes.DEFAULT_TYP
 
 # callback function after contacting the payment provider
 async def successful_payment_callback(
-    update: Update, context: ContextTypes.DEFAULT_TYPE
+        update: Update, context: ContextTypes.DEFAULT_TYPE
 ):
     # get the user's language preference
     language = await get_language(update, context)
@@ -178,17 +233,14 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     with open(f"{language}_strings.json", "r") as f:
         strings = json.load(f)
 
+    # extract the callback query and chat id from the update object
     query = update.callback_query
     choice = query.data
     chat_id = query.message.chat_id
 
-    # get the user ID from the Telegram message
-    user_id = query.from_user.id
-
     # get the selected plan and duration days from the user data
     user_data = context.user_data
     selected_plan = user_data.get("selected_plan")
-    duration_days = user_data.get("duration_days")
 
     if choice == "suggest":
         # suggest the VPN protocol to use
@@ -197,21 +249,29 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     elif choice == "openvpn":
         await openvpn_callback(update, context)
+        # send a message to the user confirming the duration of their plan
+        if selected_plan is not None:
+            duration_message = (
+                f"Your GuardianVPN service will be active for {selected_plan}."
+            )
+            await context.bot.send_message(chat_id, duration_message)
+
     elif choice == "wireguard":
         await wireguard_callback(update, context)
-
-    # send a message to the user confirming the duration of their plan
-    if selected_plan is not None:
-        duration_message = (
-            f"Your GuardianVPN service will be active for {selected_plan}."
-        )
-        await update.message.reply_text(duration_message)
+        # send a message to the user confirming the duration of their plan
+        if selected_plan is not None:
+            duration_message = (
+                f"Your GuardianVPN service will be active for {selected_plan}."
+            )
+            await context.bot.send_message(chat_id, duration_message)
 
     # delete the user data to prevent resending the same configuration file
     context.user_data.pop("selected_plan", None)
     context.user_data.pop("duration_days", None)
 
 
+# send a typing indicator in the chat
+@send_upload_document_action
 # generate client config file for OpenVPN
 async def openvpn_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # get the user's language preference
@@ -220,9 +280,14 @@ async def openvpn_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # load text based on language preference
     with open(f"{language}_strings.json", "r") as f:
         strings = json.load(f)
+
     # get the duration days from the user data
     duration_days = context.user_data.get("duration_days")
+
+    # extract the callback query and chat id from the update object
     query = update.callback_query
+    chat_id = query.message.chat_id
+
     # get the user ID from the Telegram message
     user_id = query.from_user.id
     # generate a unique client name based on the user ID
@@ -241,7 +306,7 @@ async def openvpn_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         ]
     ).returncode
     if return_code != 0:
-        await context.bot.send_message(strings["config_generation_error"])
+        await context.bot.send_message(chat_id, strings["config_generation_error"])
     # else:
     # alternative method for running the sudo command using pexpect:
     # password = "your_password"  # change this to your sudo password
@@ -252,16 +317,18 @@ async def openvpn_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # check for any error messages
     # if child.expect(["Error", "Failed", pexpect.EOF]) < 2:
     # an error message was found
-    # await update.message.reply_text((strings["config_generation_error"]))
+    # await context.bot.send_message(chat_id, strings["config_generation_error"])
     else:
         # open the client config file and send it to the user
         file_path = f"/home/sammy/ovpns/{client_name}.ovpn"
         with open(file_path, "rb") as f:
-            await update.message.reply_document(
-                document=f, filename=f"{client_name}.ovpn"
+            await context.bot.send_document(
+                chat_id, document=f, filename=f"{client_name}.ovpn"
             )
 
 
+# send a typing indicator in the chat
+@send_upload_document_action
 # generate client config file for WireGuard
 async def wireguard_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # get the user's language preference
@@ -272,7 +339,11 @@ async def wireguard_callback(update: Update, context: ContextTypes.DEFAULT_TYPE)
         strings = json.load(f)
     # get the duration days from the user data
     duration_days = context.user_data.get("duration_days")
+
+    # extract the callback query and chat id from the update object
     query = update.callback_query
+    chat_id = query.message.chat_id
+
     # get the user ID from the Telegram message
     user_id = query.from_user.id
     # generate a unique client name based on the user ID
@@ -280,7 +351,7 @@ async def wireguard_callback(update: Update, context: ContextTypes.DEFAULT_TYPE)
     # note: this command requires root privileges
     return_code = subprocess.run(["pivpn", "wg", "add", "-n", client_name]).returncode
     if return_code != 0:
-        await update.message.reply_text(strings["config_generation_error"])
+        await context.bot.send_message(chat_id, strings["config_generation_error"])
     # else:
     # alternative method for running the sudo command using pexpect:
     # password = "your_password"  # change this to your sudo password
@@ -291,37 +362,53 @@ async def wireguard_callback(update: Update, context: ContextTypes.DEFAULT_TYPE)
     # check for any error messages
     # if child.expect(["Error", "Failed", pexpect.EOF]) < 2:
     # an error message was found
-    # await update.message.reply_text((strings["config_generation_error"]))
+    # await context.bot.send_message(chat_id, strings["config_generation_error"])
     else:
         # set expiration timestamp (only for Wireguard config)
         expiry_secs = duration_days * 86400
         expiry_timestamp = int(time.time()) + expiry_secs
+        expiry_date = datetime.datetime.utcfromtimestamp(expiry_timestamp).strftime(
+            "%Y-%m-%d %H:%M:%S UTC"
+        )
         config_file = f"/home/sammy/configs/{client_name}.conf"
-        post_up = f'PostUp = echo "Expires = {expiry_timestamp}" >> {config_file}'
+        post_up = f'Expires = "{expiry_date}"\n'
         # add PostUp command to client configuration file
         with open(config_file, "a") as f:
-            f.write("\n" + post_up)
+            f.write(post_up)
         # open the client config file and send it to the user
         with open(f"/home/sammy/configs/{client_name}.conf", "rb") as f:
-            await update.message.reply_document(
-                document=f, filename=f"{client_name}.conf"
+            await context.bot.send_document(
+                chat_id, document=f, filename=f"{client_name}.conf"
             )
+        # send a upload photo indicator in the chat
+        await context.bot.send_chat_action(
+            chat_id=update.effective_chat.id, action=ChatAction.UPLOAD_PHOTO
+        )
+
+        # generate the WireGuard QR code from the config file using qrencode
+        subprocess.call(
+            [
+                "qrencode",
+                "-t",
+                "png",
+                "-o",
+                f"/home/sammy/configs/{client_name}.png",
+                "-r",
+                f"/home/sammy/configs/{client_name}.conf",
+            ]
+        )
+        # send the QR code image to Telegram
+        with open(f"/home/sammy/configs/{client_name}.png", "rb") as f:
+            await context.bot.send_photo(chat_id, photo=f)
 
 
-# define a function to handle the /start command
+# call the display_message function for the /start command
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # get the user's language preference
-    language = await get_language(update, context)
-
-    # load text based on language preference
-    with open(f"{language}_strings.json", "r") as f:
-        strings = json.load(f)
-
-    # send a message back to the user when the command /start is issued
-    start_message = strings["start_message"]
-    await update.message.reply_text(start_message)
+    await display_message(update, context, "start_message", "\n\n")
 
 
+# send a typing indicator in the chat
+@send_typing_action
 # define a function to handle the /status command
 async def status(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # use subprocess to run the "systemctl status openvpn" command
@@ -334,108 +421,47 @@ async def status(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(active_line)
 
 
-# define a function to handle the /about command
+# call the display_message function for the /about command
 async def about(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # get the user's language preference
-    language = await get_language(update, context)
-
-    # load text based on language preference
-    with open(f"{language}_strings.json", "r") as f:
-        strings = json.load(f)
-
-    # send a message back to the user in the appropriate language
-    about_message = strings["about_message"]
-    await update.message.reply_text(about_message)
+    await display_message(update, context, "about_message", "\n\n")
 
 
-# define a function to handle the /limitations command
+# call the display_message function for the /limitations command
 async def limitations(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # get the user's language preference
-    language = await get_language(update, context)
-
-    # load text based on language preference
-    with open(f"{language}_strings.json", "r") as f:
-        strings = json.load(f)
-
-    # send a message back to the user in the appropriate language
-    limitations_message = strings["limitations_message"]
-    await update.message.reply_text(limitations_message)
+    await display_message(update, context, "limitations_message", "\n\n")
 
 
-# define a function to handle the /privacy command
+# call the display_message function for the /privacy command
 async def privacy(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # get the user's language preference
-    language = await get_language(update, context)
-
-    # load text based on language preference
-    with open(f"{language}_strings.json", "r") as f:
-        strings = json.load(f)
-
-    # send a message with privacy policy
-    privacy_message = strings["privacy_message"]
-    await update.message.reply_text(privacy_message)
+    await display_message(update, context, "privacy_message", "\n\n")
 
 
-# define a function to handle the /terms command
-async def terms(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # get the user's language preference
-    language = await get_language(update, context)
-
-    # load text based on language preference
-    with open(f"{language}_strings.json", "r") as f:
-        strings = json.load(f)
-
-    # send a message with terms and conditions
-    terms_message = strings["terms_message"]
-    await update.message.reply_text(terms_message)
-
-
-# define a function to handle the /help command
+# call the display_message function for the /help command
 async def help(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # get the user's language preference
-    language = await get_language(update, context)
-
-    # load text based on language preference
-    with open(f"{language}_strings.json", "r") as f:
-        strings = json.load(f)
-
-    # send a message with the list of available commands and usage instructions
-    help_message = strings["help_message"]
-    await update.message.reply_text(help_message)
+    await display_message(update, context, "help_message", "\n\n")
 
 
-# define a function to handle the /support command
+# call the display_message function for the /terms command
+async def terms(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await display_message(update, context, "terms_message", "\n\n")
+
+
+# call the display_message function for the /support command
 async def support(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # get the user's language preference
-    language = await get_language(update, context)
-
-    # load text based on language preference
-    with open(f"{language}_strings.json", "r") as f:
-        strings = json.load(f)
-
-    # send a message with contact information for support
-    support_message = strings["support_message"]
-    await update.message.reply_text(support_message)
+    await display_message(update, context, "support_message", "\n\n")
 
 
-# define a function to handle the /tutorial command
+# call the display_message function for the /tutorial command
 async def tutorial(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # get user's language preference from user_data dictionary
-    language = await get_language(update, context)
-
-    # load text based on language preference
-    with open(f"{language}_strings.json", "r") as f:
-        strings = json.load(f)
-
-    # send a message with instructions on how to use an OpenVPN config file with the OpenVPN app
-    tutorial_message = strings["tutorial_message"]
-    await update.message.reply_text(tutorial_message)
+    await display_message(update, context, "tutorial_message", "\n\n")
 
 
 # define a global variable to store the last update date
 last_update_date = None
 
 
+# send a typing indicator in the chat
+@send_typing_action
 # define a function to handle the /whatsnew command
 async def whatsnew(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # get user's language preference from user_data dictionary
@@ -538,12 +564,6 @@ async def get_download_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
     selected_app = context.user_data.get("selected_app")
     selected_os = context.user_data.get("selected_os")
 
-    if not selected_app or not selected_os:
-        await query.edit_message_text(
-            text="Oops, something went wrong. Please try again."
-        )
-        return ConversationHandler.END
-
     # load the download_links.json file and get the download link based on the user's app and OS selections
     with open("download_links.json") as f:
         data = json.load(f)
@@ -554,6 +574,8 @@ async def get_download_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
     return ConversationHandler.END
 
 
+# send a typing indicator in the chat
+@send_typing_action
 # handle unknown command
 async def unknown(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Sorry, I didn't understand that command.")
