@@ -4,10 +4,11 @@
 
 The GuardianVPN Telegram Bot allows users to generate configuration files for OpenVPN and WireGuard servers, which can then be used to connect to servers via the official OpenVPN or WireGuard app. In addition, the bot also enables users to purchase VPN access passes for a selected duration and pay with their preferred payment method.
 ## Features
-• Generate VPN configuration files with ease via Telegram Bot  
-• Connect to OpenVPN and WireGuard servers  
-• Payment options to purchase VPN access passes for a selected duration  
-• Additional command handlers to provide information about the VPN service
+• Telegram bot integration: Generate VPN configuration files with ease via Telegram Bot  
+• VPN protocol support: Connect to OpenVPN and WireGuard servers  
+• Payment options: Enable payment processing for VPN access passes with the payment provider token  
+• Anti-tracking measures: Integrates Pi-Hole to offer pre-configured filter lists such as EasyList or NoTrack to deliver a tracking-free VPN service  
+• Additional command handlers: Provide information about the VPN service for a better user experience
 
 ## Installation
 1. Create a new Telegram bot using [BotFather](https://t.me/BotFather):  
@@ -21,9 +22,11 @@ The GuardianVPN Telegram Bot allows users to generate configuration files for Op
 5. Run `python bot.py` script
 6. Start the bot in Telegram by searching for the bot name and clicking on the `start` button  
 
-Note: By default, this project uses PiVPN to configure a VPN server, however, you can modify the code to add your own desired options.
+**Note: By default, this project uses PiVPN to configure a VPN server and Pi-Hole for network-wide ad-blocking. However, the code can be modified to include other desired options.**
 
-The Payment options feature enables users to purchase VPN access passes for a selected duration using their preferred payment method. The configuration file will be generated after payment. Please note that to enable payments in your bot, you will need to set up a payment provider and obtain a payment provider token. Telegram's BotFather provides instructions for setting up payments in your bot.
+## Payment Options
+
+The payment options feature enables users to purchase VPN access passes for a selected duration using their preferred payment method. After payment, the configuration file will be generated. To enable payments in your bot, you will need to set up a payment provider and obtain a payment provider token. Telegram's BotFather provides instructions for setting up payments in your bot.
 
 ## Usage
 Once the bot is running, users can interact with it by sending commands via Telegram. The available commands are:  
@@ -42,7 +45,6 @@ Once the bot is running, users can interact with it by sending commands via Tele
 ## Future Development
 Here are some ideas for potential future developments for this project:  
 • Multiple server locations: Allow users to choose from multiple server locations for their VPN connection  
-• Anti-tracking feature: Integrate anti-tracking measures by using Pi-Hole. This will include pre-configured filter lists such as EasyList or NoTrack to deliver a tracking-free VPN service.    
 • User dashboard: Create a customized user dashboard to allow users to manage their subscriptions and settings
 
 ## Contributions
