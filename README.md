@@ -9,6 +9,7 @@ The GuardianVPN Telegram Bot allows users to generate configuration files for Op
 • Payment options: Enable payment processing for VPN access passes with the payment provider token  
 • Anti-tracking measures: Integrates Pi-Hole to offer pre-configured filter lists such as EasyList or NoTrack to deliver a tracking-free VPN service  
 • Additional command handlers: Provide information about the VPN service for a better user experience  
+
 To learn more about the bot's features, visit the bot at [GuardianVPN](https://t.me/GuardianVPNBot).
 
 ## Installation
