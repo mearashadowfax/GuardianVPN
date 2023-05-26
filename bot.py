@@ -11,12 +11,8 @@ from functools import wraps  # for using function decorators
 # import the Telegram API token from config.py
 from config import TELEGRAM_API_TOKEN
 
-TELEGRAM_API_TOKEN = TELEGRAM_API_TOKEN
-
 # import the Payment provider token from config.py
 from config import PAYMENT_PROVIDER_TOKEN
-
-PAYMENT_PROVIDER_TOKEN = PAYMENT_PROVIDER_TOKEN
 
 # import the required Telegram modules
 from telegram.constants import ChatAction
