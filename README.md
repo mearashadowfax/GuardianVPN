@@ -20,7 +20,11 @@ To learn more about the bot's features, visit the bot at [GuardianVPN](https://t
     • BotFather will provide you with a `TELEGRAM_API_TOKEN`. Save it for later use  
 2. Clone this repository and navigate to the project directory
 3. Install the required dependencies using `pip install -r requirements.txt`
-4. Create a `config.py` file and set the necessary environment variables (`TELEGRAM_API_TOKEN`, `PAYMENT_PROVIDER_TOKEN`) 
+4. Create a `config.py` file in the project directory and define the necessary variables (`TELEGRAM_API_TOKEN`, `PAYMENT_PROVIDER_TOKEN`). The contents of your `config.py` file should look like this:
+```
+TELEGRAM_API_TOKEN = 'YOUR_TELEGRAM_API_TOKEN'
+PAYMENT_PROVIDER_TOKEN = 'YOUR_PAYMENT_PROVIDER_TOKEN'
+```
 5. Run `python3 bot.py` script
 6. Start the bot in Telegram by searching for the bot name and clicking on the `start` button  
 
