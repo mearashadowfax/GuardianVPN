@@ -1,0 +1,21 @@
+version: '3.8'
+services:
+  guardian-vpn:
+    build:
+      context: ./
+    env_file:
+      - .env
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - type: bind
+        source: ./config.py
+        target: /config.py
+        read_only: true
+  pivpn:
+    image: pivpn/pivpn:latest
+    ports:
+      - "1194:1194/udp"
+    restart: unless-stopped
+

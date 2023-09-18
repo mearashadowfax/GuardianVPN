@@ -19,14 +19,49 @@ To learn more about the bot's features, visit the bot at [GuardianVPN](https://t
     • Type `/newbot` and follow the instructions to create a new bot  
     • BotFather will provide you with a `TELEGRAM_API_TOKEN`. Save it for later use  
 2. Clone this repository and navigate to the project directory
-3. Install the required dependencies using `pip install -r requirements.txt`
-4. Create a `config.py` file in the project directory and define the necessary variables (`TELEGRAM_API_TOKEN`, `PAYMENT_PROVIDER_TOKEN`). The contents of your `config.py` file should look like this:
+3. Create a `.env` file in the project directory and define the necessary variables (`TELEGRAM_API_TOKEN`, `PAYMENT_PROVIDER_TOKEN`). The contents of your `.env` file should look like this:
 ```
-TELEGRAM_API_TOKEN = 'YOUR_TELEGRAM_API_TOKEN'
+TELEGRAM_API_TOKEN = YOUR_TELEGRAM_API_TOKEN
 PAYMENT_PROVIDER_TOKEN = 'YOUR_PAYMENT_PROVIDER_TOKEN'
 ```
-5. Run `python3 bot.py` script
-6. Start the bot in Telegram by searching for the bot name and clicking on the `start` button  
+4. Create a `config.py` file in the project directory. In your `config.py` file, import the `os` module and use `os.environ.get()` to access the environment variables:
+```
+import os
+
+TELEGRAM_API_TOKEN = os.environ.get('TELEGRAM_API_TOKEN')
+PAYMENT_PROVIDER_TOKEN = os.environ.get('YOUR_PAYMENT_PROVIDER_TOKEN')
+```
+<details>
+<summary>Native</summary>
+
+5. Install the required dependencies using `pip install -r requirements.txt`
+6. Run the `bot.py` script using `python3 bot.py`
+</details>
+<details>
+<summary>Docker</summary>
+
+5. Build the Docker container using
+
+```
+docker build -t guardian-vpn .
+```
+6. Run the Docker container using the command
+
+```
+docker run --mount type=bind,source="$(pwd)"/config.py,target=/config.py,readonly guardian-vpn
+```
+</details>
+<details>
+<summary>Docker Compose</summary>
+
+5. Build and run the Docker container using
+
+```
+docker compose up -d
+```
+</details>
+
+Start the bot in Telegram by searching for the bot name and clicking on the `start` button  
 
 **Note: By default, this project uses PiVPN to configure a VPN server and Pi-Hole for network-wide ad-blocking. However, the code can be modified to include other desired options.**
 
