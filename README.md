@@ -57,7 +57,7 @@ docker run --mount type=bind,source="$(pwd)"/config.py,target=/config.py,readonl
 5. Build and run the Docker container using
 
 ```
-docker compose up -d
+docker-compose up -d
 ```
 </details>
 
