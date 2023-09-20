@@ -1,6 +1,7 @@
 # import the required modules
 import asyncio  # for asynchronous programming
 import subprocess  # for running shell commands
+import os  # for working with the operating system
 import datetime  # for getting the current date/time
 import json  # for working with JSON data
 import time  # for working with time-related operations
@@ -317,6 +318,16 @@ async def openvpn_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data.pop("selected_plan", None)
     context.user_data.pop("duration_days", None)
 
+    # Delete the configuration file and QR code image
+    config_file_path = f"/home/sammy/ovpns/{client_name}.conf"
+
+    try:
+        # Delete the configuration file
+        os.remove(config_file_path)
+    except Exception as e:
+        # Handle exceptions, e.g., file not found or permission issues
+        print(f"Error deleting files: {str(e)}")
+
 
 # send a typing indicator in the chat
 @send_upload_document_action
@@ -410,6 +421,19 @@ async def wireguard_callback(update: Update, context: ContextTypes.DEFAULT_TYPE)
     # delete the user data to prevent resending the same configuration file
     context.user_data.pop("selected_plan", None)
     context.user_data.pop("duration_days", None)
+
+    # Delete the configuration file and QR code image
+    config_file_path = f"/home/sammy/configs/{client_name}.conf"
+    qr_code_image_path = f"/home/sammy/configs/{client_name}.png"
+
+    try:
+        # Delete the configuration file
+        os.remove(config_file_path)
+        # Delete the QR code image
+        os.remove(qr_code_image_path)
+    except Exception as e:
+        # Handle exceptions, e.g., file not found or permission issues
+        print(f"Error deleting files: {str(e)}")
 
 
 # call the display_message function for the /start command
