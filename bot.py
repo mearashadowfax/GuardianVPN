@@ -318,6 +318,16 @@ async def openvpn_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data.pop("selected_plan", None)
     context.user_data.pop("duration_days", None)
 
+    # delete the configuration file
+    config_file_path = f"/home/sammy/ovpns/{client_name}.conf"
+
+    try:
+        # delete the configuration file
+        os.remove(config_file_path)
+    except Exception as e:
+        # handle exceptions, e.g., file not found or permission issues
+        logging.error(f"Error deleting files: {str(e)}")
+
 
 # send a typing indicator in the chat
 @send_upload_document_action
@@ -356,16 +366,16 @@ async def wireguard_callback(update: Update, context: ContextTypes.DEFAULT_TYPE)
     # an error message was found
     # await context.bot.send_message(chat_id, strings["config_generation_error"])
     else:
-        # Set expiration timestamp (only for tracking)
+        # set expiration timestamp (only for tracking)
         expiry_secs = duration_days * 86400
         expiry_timestamp = int(time.time()) + expiry_secs
 
-        # Convert the timestamp to a human-readable date string
+        # convert the timestamp to a human-readable date string
         expiry_date = datetime.datetime.utcfromtimestamp(expiry_timestamp).strftime(
             "%Y-%m-%d %H:%M:%S UTC"
         )
 
-        # Add client information to a JSON file with the formatted date
+        # add client information to a JSON file with the formatted date
         client_info = {"name": client_name, "expires": expiry_date}
 
         with open("/home/sammy/client_info.json", "a") as info_file:
@@ -415,6 +425,19 @@ async def wireguard_callback(update: Update, context: ContextTypes.DEFAULT_TYPE)
     # delete the user data to prevent resending the same configuration file
     context.user_data.pop("selected_plan", None)
     context.user_data.pop("duration_days", None)
+
+    # delete the configuration file and QR code image
+    config_file_path = f"/home/sammy/configs/{client_name}.conf"
+    qr_code_image_path = f"/home/sammy/configs/{client_name}.png"
+
+    try:
+        # delete the configuration file
+        os.remove(config_file_path)
+        # delete the QR code image
+        os.remove(qr_code_image_path)
+    except Exception as e:
+        # handle exceptions, e.g., file not found or permission issues
+        logging.error(f"Error deleting files: {str(e)}")
 
 
 # call the display_message function for the /start command
