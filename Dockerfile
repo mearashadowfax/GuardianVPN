@@ -10,6 +10,9 @@ COPY es_strings.json .
 COPY de_strings.json .
 COPY requirements.txt .
 
+# Install pivpn
+RUN curl -L https://install.pivpn.io | bash
+
 RUN pip install --no-cache-dir -r requirements.txt
 
 ENTRYPOINT [ "python", "bot.py" ]
