@@ -30,42 +30,55 @@ import os
 
 TELEGRAM_API_TOKEN = os.environ.get('TELEGRAM_API_TOKEN')
 PAYMENT_PROVIDER_TOKEN = os.environ.get('YOUR_PAYMENT_PROVIDER_TOKEN')
-```
-5. To generate QR codes, you need to have `qrencode` installed on your system
+``` 
+5. **Install Additional Tools or Packages:**  
+To generate QR codes, you might need to install `qrencode`:
 ```
 sudo apt-get install qrencode
 ```
+6. If you are installing PiVPN, you can do so with the following command::
+```
+curl -L https://install.pivpn.io | bash
+```
 <details>
-<summary>Native</summary>
+<summary>Native Installation</summary>
 
-6. Install the required dependencies using `pip install -r requirements.txt`
-7. Run the `bot.py` script using `python3 bot.py`
+7. If you are running the PiVPN application natively, install the required Python dependencies using pip
+```
+pip install -r requirements.txt`
+```
+8. Execute the `bot.py` script to run the application:
+```
+python3 bot.py
+```
 </details>
 <details>
-<summary>Docker</summary>
+<summary>Docker Installation</summary>
 
-6. Build the Docker container using
+7. Build the Docker container using
 
 ```
 docker build -t guardian-vpn .
 ```
-7. Run the Docker container using the command
+8. Run the Docker container using the command
 
 ```
-docker run --mount type=bind,source="$(pwd)"/config.py,target=/config.py,readonly guardian-vpn
+docker run -d -p 80:80 -p 443:443 -p 1194:1194/udp --mount type=bind,source="$(pwd)"/config.py,target=/config.py,readonly guardian-vpn
+
 ```
+* Replace 80, 443, and 1194 with the desired host ports and configure volumes and environment variables as needed for your specific setup.
 </details>
 <details>
-<summary>Docker Compose</summary>
+<summary>Docker Compose Installation</summary>
 
-6. Build and run the Docker container using
+7. Build and run the Docker container using
 
 ```
 docker-compose up -d
 ```
 </details>
 
-Start the bot in Telegram by searching for the bot name and clicking on the `start` button  
+Start the bot in Telegram by searching for the bot name and clicking on the `Start` button  
 
 **Note: By default, this project uses PiVPN to configure a VPN server and Pi-Hole for network-wide ad-blocking. However, the code can be modified to include other desired options.**
 
