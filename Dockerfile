@@ -15,5 +15,5 @@ RUN curl -L https://install.pivpn.io | bash
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-ENTRYPOINT [ "python", "bot.py" ]
+CMD [ "python", "bot.py" ]
 
