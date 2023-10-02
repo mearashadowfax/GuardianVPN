@@ -21,7 +21,7 @@ To learn more about the bot's features, visit the bot at [GuardianVPN](https://t
 2. Clone this repository and navigate to the project directory
 3. Create a `.env` file in the project directory and define the necessary variables (`TELEGRAM_API_TOKEN`, `PAYMENT_PROVIDER_TOKEN`). The contents of your `.env` file should look like this:
 ```
-TELEGRAM_API_TOKEN = YOUR_TELEGRAM_API_TOKEN
+TELEGRAM_API_TOKEN = 'YOUR_TELEGRAM_API_TOKEN'
 PAYMENT_PROVIDER_TOKEN = 'YOUR_PAYMENT_PROVIDER_TOKEN'
 ```
 4. Create a `config.py` file in the project directory. In your `config.py` file, import the `os` module and use `os.environ.get()` to access the environment variables:
@@ -31,52 +31,24 @@ import os
 TELEGRAM_API_TOKEN = os.environ.get('TELEGRAM_API_TOKEN')
 PAYMENT_PROVIDER_TOKEN = os.environ.get('YOUR_PAYMENT_PROVIDER_TOKEN')
 ``` 
-5. **Install Additional Tools or Packages:**  
-To generate QR codes, you might need to install `qrencode`:
+5. To generate QR codes, you might need to install `qrencode`:
 ```
 sudo apt-get install qrencode
 ```
-6. If you are installing PiVPN, you can do so with the following command::
+6. If you are installing `PiVPN` or `Pi-Hole`, you can do so with the following commands:
 ```
 curl -L https://install.pivpn.io | bash
+curl -sSL https://install.pi-hole.net | bash
 ```
-<details>
-<summary>Native Installation</summary>
 
-7. If you are running the application natively, install the required Python dependencies using pip
+7. Install the required Python dependencies using pip
 ```
-pip install -r requirements.txt`
+pip install -r requirements.txt
 ```
 8. Execute the `bot.py` script to run the application:
 ```
 python3 bot.py
 ```
-</details>
-<details>
-<summary>Docker Installation</summary>
-
-7. Build the Docker container using
-
-```
-docker build -t guardian-vpn .
-```
-8. Run the Docker container using the command
-
-```
-docker run -d -p 80:80 -p 443:443 -p 1194:1194/udp --mount type=bind,source="$(pwd)"/config.py,target=/config.py,readonly guardian-vpn
-
-```
-* Replace 80, 443, and 1194 with the desired host ports and configure volumes and environment variables as needed for your specific setup.
-</details>
-<details>
-<summary>Docker Compose Installation</summary>
-
-7. Build and run the Docker container using
-
-```
-docker-compose up -d
-```
-</details>
 
 Start the bot in Telegram by searching for the bot name and clicking on the `Start` button  
 
