@@ -49,7 +49,7 @@ sudo apt-get install qrencode
 ```
 docker build -t guardian-vpn .
 ```
-6. Run the Docker container using the command
+7. Run the Docker container using the command
 
 ```
 docker run --mount type=bind,source="$(pwd)"/config.py,target=/config.py,readonly guardian-vpn
@@ -58,7 +58,7 @@ docker run --mount type=bind,source="$(pwd)"/config.py,target=/config.py,readonl
 <details>
 <summary>Docker Compose</summary>
 
-7. Build and run the Docker container using
+6. Build and run the Docker container using
 
 ```
 docker-compose up -d
