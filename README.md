@@ -31,16 +31,20 @@ import os
 TELEGRAM_API_TOKEN = os.environ.get('TELEGRAM_API_TOKEN')
 PAYMENT_PROVIDER_TOKEN = os.environ.get('YOUR_PAYMENT_PROVIDER_TOKEN')
 ```
+5. To generate QR codes, you need to have `qrencode` installed on your system
+```
+sudo apt-get install qrencode
+```
 <details>
 <summary>Native</summary>
 
-5. Install the required dependencies using `pip install -r requirements.txt`
-6. Run the `bot.py` script using `python3 bot.py`
+6. Install the required dependencies using `pip install -r requirements.txt`
+7. Run the `bot.py` script using `python3 bot.py`
 </details>
 <details>
 <summary>Docker</summary>
 
-5. Build the Docker container using
+6. Build the Docker container using
 
 ```
 docker build -t guardian-vpn .
@@ -54,7 +58,7 @@ docker run --mount type=bind,source="$(pwd)"/config.py,target=/config.py,readonl
 <details>
 <summary>Docker Compose</summary>
 
-5. Build and run the Docker container using
+7. Build and run the Docker container using
 
 ```
 docker-compose up -d
