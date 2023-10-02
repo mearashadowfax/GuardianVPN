@@ -1,4 +1,4 @@
-FROM python:3.8-slim
+FROM python:3.11-slim
 
 LABEL description="A Telegram bot that delivers VPN configuration files straight to your device at the touch of a button"
 
@@ -10,10 +10,7 @@ COPY es_strings.json .
 COPY de_strings.json .
 COPY requirements.txt .
 
-# Install pivpn
-RUN curl -L https://install.pivpn.io | bash
-
+#Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
 CMD [ "python", "bot.py" ]
-
