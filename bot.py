@@ -319,7 +319,7 @@ async def openvpn_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data.pop("duration_days", None)
 
     # delete the configuration file
-    config_file_path = f"/home/sammy/ovpns/{client_name}.conf"
+    config_file_path = f"/home/sammy/ovpns/{client_name}.ovpn"
 
     try:
         # delete the configuration file
