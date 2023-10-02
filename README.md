@@ -43,7 +43,7 @@ curl -L https://install.pivpn.io | bash
 <details>
 <summary>Native Installation</summary>
 
-7. If you are running the PiVPN application natively, install the required Python dependencies using pip
+7. If you are running the application natively, install the required Python dependencies using pip
 ```
 pip install -r requirements.txt`
 ```
