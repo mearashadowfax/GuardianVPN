@@ -15,6 +15,9 @@ from config import TELEGRAM_API_TOKEN
 # import the Payment provider token from config.py
 from config import PAYMENT_PROVIDER_TOKEN
 
+# import the file paths
+from config import OVPN_FILE_PATH, WG_FILE_PATH, QR_CODE_PATH
+
 # import the required Telegram modules
 from telegram.constants import ChatAction
 from telegram import Update, LabeledPrice, InlineKeyboardMarkup, InlineKeyboardButton
@@ -308,7 +311,7 @@ async def openvpn_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # await context.bot.send_message(chat_id, strings["config_generation_error"])
     else:
         # open the client config file and send it to the user
-        file_path = f"/home/sammy/ovpns/{client_name}.ovpn"
+        file_path = os.path.join(OVPN_FILE_PATH, f"{client_name}.ovpn")
         with open(file_path, "rb") as f:
             await context.bot.send_document(
                 chat_id, document=f, filename=f"{client_name}.ovpn"
@@ -319,7 +322,7 @@ async def openvpn_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data.pop("duration_days", None)
 
     # delete the configuration file
-    config_file_path = f"/home/sammy/ovpns/{client_name}.ovpn"
+    config_file_path = os.path.join(OVPN_FILE_PATH, f"{client_name}.ovpn")
 
     try:
         # delete the configuration file
@@ -378,11 +381,11 @@ async def wireguard_callback(update: Update, context: ContextTypes.DEFAULT_TYPE)
         # add client information to a JSON file with the formatted date
         client_info = {"name": client_name, "expires": expiry_date}
 
-        with open("/home/sammy/client_info.json", "a") as info_file:
+        with open(os.path.join(WG_FILE_PATH, f"client_info.json"), "a") as info_file:
             json.dump(client_info, info_file)
             info_file.write("\n")
         # open the client config file and send it to the user
-        with open(f"/home/sammy/configs/{client_name}.conf", "rb") as f:
+        with open(os.path.join(WG_FILE_PATH, f"{client_name}.conf"), "rb") as f:
             await context.bot.send_document(
                 chat_id, document=f, filename=f"{client_name}.conf"
             )
@@ -398,16 +401,16 @@ async def wireguard_callback(update: Update, context: ContextTypes.DEFAULT_TYPE)
                 "-t",
                 "png",
                 "-o",
-                f"/home/sammy/configs/{client_name}.png",
+                os.path.join(QR_CODE_PATH, f"{client_name}.png"),
                 "-r",
-                f"/home/sammy/configs/{client_name}.conf",
+                os.path.join(WG_FILE_PATH, f"{client_name}.conf"),
             ]
         )
         # use pexpect to generate the QR code and capture the output
         # set the path to the qrencode command
         # qrencode_path = "/usr/bin/qrencode"
         # specify the path to the directory containing the config files
-        # config_path = "/home/sammy/configs/"
+        # config_path = os.path.join(WG_FILE_PATH)
         # set the parameters for the qrencode command
         # qrencode_args = ["-t", "png", "-o", f"{config_path}{client_name}.png", "-r", f"{config_path}{
         # client_name}.conf"]
@@ -419,7 +422,7 @@ async def wireguard_callback(update: Update, context: ContextTypes.DEFAULT_TYPE)
         # with open(f"{config_path}{client_name}.png", "rb") as f:
         # await context.bot.send_photo(chat_id, photo=f)
         # send the QR code image to Telegram
-        with open(f"/home/sammy/configs/{client_name}.png", "rb") as f:
+        with open(os.path.join(QR_CODE_PATH, f"{client_name}.png"), "rb") as f:
             await context.bot.send_photo(chat_id, photo=f)
 
     # delete the user data to prevent resending the same configuration file
@@ -427,8 +430,8 @@ async def wireguard_callback(update: Update, context: ContextTypes.DEFAULT_TYPE)
     context.user_data.pop("duration_days", None)
 
     # delete the configuration file and QR code image
-    config_file_path = f"/home/sammy/configs/{client_name}.conf"
-    qr_code_image_path = f"/home/sammy/configs/{client_name}.png"
+    config_file_path = os.path.join(WG_FILE_PATH, f"{client_name}.conf")
+    qr_code_image_path = os.path.join(QR_CODE_PATH, f"{client_name}.png")
 
     try:
         # delete the configuration file

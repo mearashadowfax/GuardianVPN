@@ -19,17 +19,24 @@ To learn more about the bot's features, visit the bot at [GuardianVPN](https://t
     • Type `/newbot` and follow the instructions to create a new bot  
     • BotFather will provide you with a `TELEGRAM_API_TOKEN`. Save it for later use  
 2. Clone this repository and navigate to the project directory
-3. Create a `.env` file in the project directory and define the necessary variables (`TELEGRAM_API_TOKEN`, `PAYMENT_PROVIDER_TOKEN`). The contents of your `.env` file should look like this:
+3. Create a `.env` file in the project directory and define the necessary variables (`TELEGRAM_API_TOKEN`, `PAYMENT_PROVIDER_TOKEN`) as well as custom file paths. The contents of your `.env` file should look like this:
 ```
 TELEGRAM_API_TOKEN = 'YOUR_TELEGRAM_API_TOKEN'
 PAYMENT_PROVIDER_TOKEN = 'YOUR_PAYMENT_PROVIDER_TOKEN'
+OVPN_FILE_PATH = '/path/to/ovpns/files/'
+WG_FILE_PATH = '/path/to/configs/files/'
+QR_CODE_PATH = '/path/to/qr/code/files/'
+
 ```
 4. Create a `config.py` file in the project directory. In your `config.py` file, import the `os` module and use `os.environ.get()` to access the environment variables:
 ```
 import os
 
 TELEGRAM_API_TOKEN = os.environ.get('TELEGRAM_API_TOKEN')
-PAYMENT_PROVIDER_TOKEN = os.environ.get('YOUR_PAYMENT_PROVIDER_TOKEN')
+PAYMENT_PROVIDER_TOKEN = os.environ.get('PAYMENT_PROVIDER_TOKEN')
+OVPN_FILE_PATH = os.environ.get('OVPN_FILE_PATH')
+WG_FILE_PATH = os.environ.get('WG_FILE_PATH')
+QR_CODE_PATH = os.environ.get('QR_CODE_PATH')
 ``` 
 5. To generate QR codes, you might need to install `qrencode`:
 ```
@@ -43,7 +50,7 @@ curl -sSL https://install.pi-hole.net | bash
 
 7. Install the required Python dependencies using pip
 ```
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 ```
 8. Execute the `bot.py` script to run the application:
 ```
@@ -52,7 +59,11 @@ python3 bot.py
 
 Start the bot in Telegram by searching for the bot name and clicking on the `Start` button  
 
-**Note: By default, this project uses PiVPN to configure a VPN server and Pi-Hole for network-wide ad-blocking. However, the code can be modified to include other desired options.**
+**Note: By default, this project uses PiVPN to configure a VPN server and Pi-Hole for network-wide ad-blocking. However, the code can be modified to include other desired options.**  
+
+**Note: If you install PiVPN, some commands may require root privileges. You have two options:  
+• Run commands as root.  
+• Use `sudo` with `pexpect`. Uncomment relevant code in `bot.py` and provide your sudo password if necessary. This option is specific to PiVPN installation and may not be needed on all systems.**
 
 ## Payment Options
 
