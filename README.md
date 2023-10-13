@@ -28,19 +28,8 @@ WG_FILE_PATH = '/path/to/configs/files/'
 QR_CODE_PATH = '/path/to/qr/code/files/'
 
 ```
-4. Create a `config.py` file in the project directory. In your `config.py` file, import the `os` module and use `os.environ.get()` to access the environment variables:
-```
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
-
-TELEGRAM_API_TOKEN = os.environ.get('TELEGRAM_API_TOKEN')
-PAYMENT_PROVIDER_TOKEN = os.environ.get('PAYMENT_PROVIDER_TOKEN')
-OVPN_FILE_PATH = os.environ.get('OVPN_FILE_PATH')
-WG_FILE_PATH = os.environ.get('WG_FILE_PATH')
-QR_CODE_PATH = os.environ.get('QR_CODE_PATH')
-``` 
+4. In your existing `config.py` file within the project directory, make sure to adjust the setup accordingly to load and use these environmental variables
+   
 5. To generate QR codes, you might need to install `qrencode`:
 ```
 sudo apt-get install qrencode
