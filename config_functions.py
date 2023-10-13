@@ -234,9 +234,6 @@ async def wireguard_callback(update: Update, context: ContextTypes.DEFAULT_TYPE)
         # wait for the command to complete
         # child.expect(pexpect.EOF)
         # send the QR code image to Telegram
-        # with open(f"{config_path}{client_name}.png", "rb") as f:
-        # await context.bot.send_photo(chat_id, photo=f)
-        # send the QR code image to Telegram
         with open(os.path.join(QR_CODE_PATH, f"{client_name}.png"), "rb") as f:
             await context.bot.send_photo(chat_id, photo=f)
 
