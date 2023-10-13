@@ -5,7 +5,9 @@ from functools import wraps  # for using function decorators
 
 # import the required Telegram modules
 from telegram.constants import ChatAction
+from telegram.ext import ContextTypes
 
+# import the required modules
 from language_functions import *
 
 

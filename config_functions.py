@@ -10,6 +10,11 @@ import logging  # for logging to help debug and troubleshoot the program
 # import the file paths
 from config import OVPN_FILE_PATH, WG_FILE_PATH, QR_CODE_PATH
 
+# import the required Telegram modules
+from telegram.constants import ChatAction
+from telegram import InlineKeyboardMarkup, InlineKeyboardButton
+from telegram.ext import ContextTypes
+
 # import the required modules
 from utils import *
 from language_functions import *

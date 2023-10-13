@@ -1,6 +1,10 @@
 # import the required modules
 import json  # for working with JSON data
 
+# import the required Telegram modules
+from telegram.ext import ContextTypes
+
+# import the required modules
 from config_actions import *
 from language_functions import *
 

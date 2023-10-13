@@ -2,6 +2,10 @@
 import subprocess  # for running shell commands
 import datetime  # for getting the current date/time
 
+# import the required Telegram modules
+from telegram.ext import ContextTypes
+
+# import the required modules
 from utils import *
 from language_functions import *
 
