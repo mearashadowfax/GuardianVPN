@@ -5,8 +5,8 @@ import json  # for working with JSON data
 from telegram.ext import ContextTypes
 
 # import the required modules
-from config_actions import *
-from language_functions import *
+from modules.config_actions import *
+from modules.language_functions import *
 
 
 # pre-checkout callback function
@@ -44,10 +44,10 @@ async def successful_payment_callback(
     update: Update, context: ContextTypes.DEFAULT_TYPE
 ):
     # get the user's language preference
-    language = await get_language(update, context)
+    language, language_file_path = await get_language(update, context)
 
     # load text based on language preference
-    with open(f"{language}_strings.json", "r") as f:
+    with open(language_file_path, "r") as f:
         strings = json.load(f)
 
     # confirms the successful payment

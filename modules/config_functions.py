@@ -16,17 +16,17 @@ from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import ContextTypes
 
 # import the required modules
-from utils import *
-from language_functions import *
-from config_actions import *
+from modules.utils import *
+from modules.language_functions import *
+from modules.config_actions import *
 
 
 async def generate_config(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # get the user's language preference
-    language = await get_language(update, context)
+    language, language_file_path = await get_language(update, context)
 
     # load text based on language preference
-    with open(f"{language}_strings.json", "r") as f:
+    with open(language_file_path, "r") as f:
         strings = json.load(f)
 
     # create InlineKeyboardMarkup with two buttons for the user to select product
@@ -46,10 +46,10 @@ async def generate_config(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # callback function after choosing the VPN protocol
 async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # get the user's language preference
-    language = context.user_data.get("language", "en")
+    language, language_file_path = context.user_data.get("language", "en")
 
     # load text based on language preference
-    with open(f"{language}_strings.json", "r") as f:
+    with open(language_file_path, "r") as f:
         strings = json.load(f)
 
     # extract the callback query and chat id from the update object
@@ -86,10 +86,10 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # generate client config file for OpenVPN
 async def openvpn_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # get the user's language preference
-    language = context.user_data.get("language", "en")
+    language, language_file_path = context.user_data.get("language", "en")
 
     # load text based on language preference
-    with open(f"{language}_strings.json", "r") as f:
+    with open(language_file_path, "r") as f:
         strings = json.load(f)
 
     # get the duration days from the user data
@@ -157,10 +157,10 @@ async def openvpn_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # generate client config file for WireGuard
 async def wireguard_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # get the user's language preference
-    language = context.user_data.get("language", "en")
+    language, language_file_path = context.user_data.get("language", "en")
 
     # load text based on language preference
-    with open(f"{language}_strings.json", "r") as f:
+    with open(language_file_path, "r") as f:
         strings = json.load(f)
     # get the duration days from the user data
     duration_days = context.user_data.get("duration_days")

@@ -8,7 +8,7 @@ from telegram.constants import ChatAction
 from telegram.ext import ContextTypes
 
 # import the required modules
-from language_functions import *
+from modules.language_functions import *
 
 
 # define the send_action decorator
@@ -41,10 +41,10 @@ async def smooth_streaming_message(
     update: Update, context: ContextTypes.DEFAULT_TYPE, message: str, delimiter: str
 ):
     # get the user's language preference
-    language = await get_language(update, context)
+    language, language_file_path = await get_language(update, context)
 
     # load text based on language preference
-    with open(f"{language}_strings.json", "r") as f:
+    with open(language_file_path, "r") as f:
         strings = json.load(f)
 
         # split the message into sentences using the custom delimiter

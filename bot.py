@@ -8,19 +8,17 @@ from telegram.ext import (
     MessageHandler,
     filters,
     ApplicationBuilder,
-    ContextTypes,
     PreCheckoutQueryHandler,
-    ConversationHandler,
 )
 
 # import the required modules
-from pre_payment_functions import *
-from payment_functions import *
-from config_functions import *
-from info_functions import *
-from download_links_functions import *
-from utils import *
-from language_functions import *
+from modules.pre_payment_functions import *
+from modules.payment_functions import *
+from modules.config_functions import *
+from modules.info_functions import *
+from modules.download_links_functions import *
+from modules.utils import *
+from modules.language_functions import *
 
 # enable logging
 logging.basicConfig(level=logging.INFO)
