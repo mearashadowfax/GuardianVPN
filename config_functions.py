@@ -200,7 +200,8 @@ async def wireguard_callback(update: Update, context: ContextTypes.DEFAULT_TYPE)
             json.dump(client_info, info_file)
             info_file.write("\n")
         # open the client config file and send it to the user
-        with open(os.path.join(WG_FILE_PATH, f"{client_name}.conf"), "rb") as f:
+        file_path = os.path.join(WG_FILE_PATH, f"{client_name}.conf")
+        with open(file_path, "rb") as f:
             await context.bot.send_document(
                 chat_id, document=f, filename=f"{client_name}.conf"
             )
@@ -209,6 +210,13 @@ async def wireguard_callback(update: Update, context: ContextTypes.DEFAULT_TYPE)
             chat_id=update.effective_chat.id, action=ChatAction.UPLOAD_PHOTO
         )
 
+        config_path = os.path.join(
+            WG_FILE_PATH, f"{client_name}.conf"
+        )  # Specify the path to the .conf file
+        output_file_path = os.path.join(
+            QR_CODE_PATH, f"{client_name}.png"
+        )  # Specify the output path
+
         # generate the WireGuard QR code from the config file using qrencode
         subprocess.call(
             [
@@ -216,9 +224,9 @@ async def wireguard_callback(update: Update, context: ContextTypes.DEFAULT_TYPE)
                 "-t",
                 "png",
                 "-o",
-                os.path.join(QR_CODE_PATH, f"{client_name}.png"),
+                output_file_path,
                 "-r",
-                os.path.join(WG_FILE_PATH, f"{client_name}.conf"),
+                config_path,
             ]
         )
         # use pexpect to generate the QR code and capture the output
@@ -227,14 +235,14 @@ async def wireguard_callback(update: Update, context: ContextTypes.DEFAULT_TYPE)
         # specify the path to the directory containing the config files
         # config_path = os.path.join(WG_FILE_PATH)
         # set the parameters for the qrencode command
-        # qrencode_args = ["-t", "png", "-o", f"{config_path}{client_name}.png", "-r", f"{config_path}{
-        # client_name}.conf"]
+        # qrencode_args = ["-t", "png", "-o", output_file_path, "-r", config_path]
         # spawn a child process to execute the qrencode command
         # child = pexpect.spawn(qrencode_path, qrencode_args)
         # wait for the command to complete
         # child.expect(pexpect.EOF)
         # send the QR code image to Telegram
-        with open(os.path.join(QR_CODE_PATH, f"{client_name}.png"), "rb") as f:
+        qr_code_path = os.path.join(QR_CODE_PATH, f"{client_name}.png")
+        with open(qr_code_path, "rb") as f:
             await context.bot.send_photo(chat_id, photo=f)
 
     # delete the user data to prevent resending the same configuration file
