@@ -46,7 +46,7 @@ async def generate_config(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # callback function after choosing the VPN protocol
 async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # get the user's language preference
-    language, language_file_path = context.user_data.get("language", "en")
+    language, language_file_path = await get_language(update, context)
 
     # load text based on language preference
     with open(language_file_path, "r") as f:
@@ -86,7 +86,7 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # generate client config file for OpenVPN
 async def openvpn_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # get the user's language preference
-    language, language_file_path = context.user_data.get("language", "en")
+    language, language_file_path = await get_language(update, context)
 
     # load text based on language preference
     with open(language_file_path, "r") as f:
@@ -157,7 +157,7 @@ async def openvpn_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # generate client config file for WireGuard
 async def wireguard_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # get the user's language preference
-    language, language_file_path = context.user_data.get("language", "en")
+    language, language_file_path = await get_language(update, context)
 
     # load text based on language preference
     with open(language_file_path, "r") as f:
