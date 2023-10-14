@@ -1,12 +1,10 @@
 # import the required modules
 import json  # for working with JSON data
+from modules.config_actions import *
+from modules.language_functions import *
 
 # import the required Telegram modules
 from telegram.ext import ContextTypes
-
-# import the required modules
-from modules.config_actions import *
-from modules.language_functions import *
 
 
 # pre-checkout callback function

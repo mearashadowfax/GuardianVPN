@@ -12,5 +12,6 @@
     "successful_payment": "Vielen Dank für Ihre Zahlung!",
     "differences": "Um Ihre Online-Aktivitäten privat und sicher zu halten, bieten wir eine Auswahl von zwei VPN-Protokollen an: OpenVPN und WireGuard.\n\nOpenVPN ist eine vielseitige Wahl, die mit den meisten Geräten gut funktioniert und für ihre Zuverlässigkeit und Sicherheit hoch geschätzt wird.\n\nWireGuard hingegen ist bekannt für seine Geschwindigkeit und Effizienz und eignet sich daher hervorragend für mobile Benutzer, die schnelle, nahtlose Verbindungen benötigen.",
     "config_generation_error": "Konfigurationsdatei des Klienten konnte nicht erstellt werden. Bitte versuchen Sie es später erneut.",
+    "question": "Möchtest du einen OpenVPN-Server oder einen WireGuard-Server verwenden?",
     "all_updates": "Alle Updates und Verbesserungen:\n• Unterstützung für Französisch, Deutsch, Russisch und Spanisch basierend auf der Telegramm-Spracheinstellung des Benutzers hinzugefügt.\n• Behoben: Problem mit der Benutzerauthentifizierung und Behandlung des Befehls /getapp.\n• Server-Geschwindigkeit und Zuverlässigkeit erhöht\n• Fehlerbehebungen und Leistungsverbesserungen"
 }

@@ -1,13 +1,11 @@
 # import the required modules
 import subprocess  # for running shell commands
 import datetime  # for getting the current date/time
+from modules.utils import *
+from modules.language_functions import *
 
 # import the required Telegram modules
 from telegram.ext import ContextTypes
-
-# import the required modules
-from modules.utils import *
-from modules.language_functions import *
 
 
 # call the smooth_streaming_message function for the /start command

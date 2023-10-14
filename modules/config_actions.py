@@ -1,3 +1,7 @@
+# import the required modules
+import json  # for working with JSON data
+from modules.language_functions import *
+
 # import the required Telegram modules
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import ContextTypes
@@ -15,7 +19,14 @@ async def generate_config_success(update: Update, context: ContextTypes.DEFAULT_
     ]
     protocols = InlineKeyboardMarkup(buttons)
 
+    # get user's language preference from user_data dictionary
+    language, language_file_path = await get_language(update, context)
+
+    # load text based on language preference
+    with open(language_file_path, "r") as f:
+        strings = json.load(f)
+
     # ask the user whether they want to use OpenVPN or Wireguard
     chat_id = update.message.chat_id
-    question = "Do you want to use an OpenVPN server or a WireGuard server?"
+    question = strings["question"]
     await context.bot.send_message(chat_id, text=question, reply_markup=protocols)

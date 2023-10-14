@@ -6,6 +6,9 @@ import json  # for working with JSON data
 import time  # for working with time-related operations
 import pexpect  # for interacting with command line prompts
 import logging  # for logging to help debug and troubleshoot the program
+from modules.utils import *
+from modules.language_functions import *
+from modules.config_actions import *
 
 # import the file paths
 from config import OVPN_FILE_PATH, WG_FILE_PATH, QR_CODE_PATH
@@ -14,11 +17,6 @@ from config import OVPN_FILE_PATH, WG_FILE_PATH, QR_CODE_PATH
 from telegram.constants import ChatAction
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import ContextTypes
-
-# import the required modules
-from modules.utils import *
-from modules.language_functions import *
-from modules.config_actions import *
 
 
 async def generate_config(update: Update, context: ContextTypes.DEFAULT_TYPE):

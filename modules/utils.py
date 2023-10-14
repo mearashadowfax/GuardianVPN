@@ -2,13 +2,11 @@
 import asyncio  # for asynchronous programming
 import json  # for working with JSON data
 from functools import wraps  # for using function decorators
+from modules.language_functions import *
 
 # import the required Telegram modules
 from telegram.constants import ChatAction
 from telegram.ext import ContextTypes
-
-# import the required modules
-from modules.language_functions import *
 
 
 # define the send_action decorator
