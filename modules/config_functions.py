@@ -232,17 +232,6 @@ async def wireguard_callback(update: Update, context: ContextTypes.DEFAULT_TYPE)
                 config_path,
             ]
         )
-        # use pexpect to generate the QR code and capture the output
-        # set the path to the qrencode command
-        # qrencode_path = "/usr/bin/qrencode"
-        # specify the path to the directory containing the config files
-        # config_path = os.path.join(WG_FILE_PATH)
-        # set the parameters for the qrencode command
-        # qrencode_args = ["-t", "png", "-o", output_file_path, "-r", config_path]
-        # spawn a child process to execute the qrencode command
-        # child = pexpect.spawn(qrencode_path, qrencode_args)
-        # wait for the command to complete
-        # child.expect(pexpect.EOF)
         # send the QR code image to Telegram
         qr_code_path = os.path.join(QR_CODE_PATH, f"{client_name}.png")
         with open(qr_code_path, "rb") as f:

@@ -9,6 +9,13 @@ from telegram.ext import ContextTypes
 
 # define a function to handle user input for choosing a VPN protocol
 async def generate_config_success(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    # get user's language preference from user_data dictionary
+    language, language_file_path = await get_language(update, context)
+
+    # load text based on language preference
+    with open(language_file_path, "r") as f:
+        strings = json.load(f)
+
     # create InlineKeyboardMarkup with buttons for the user to select OpenVPN or Wireguard
     buttons = [
         [
@@ -18,13 +25,6 @@ async def generate_config_success(update: Update, context: ContextTypes.DEFAULT_
         [InlineKeyboardButton("Help me choose", callback_data="suggest")],
     ]
     protocols = InlineKeyboardMarkup(buttons)
-
-    # get user's language preference from user_data dictionary
-    language, language_file_path = await get_language(update, context)
-
-    # load text based on language preference
-    with open(language_file_path, "r") as f:
-        strings = json.load(f)
 
     # ask the user whether they want to use OpenVPN or Wireguard
     chat_id = update.message.chat_id
