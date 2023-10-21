@@ -39,6 +39,7 @@ sudo apt-get install qrencode
 curl -L https://install.pivpn.io | bash
 curl -sSL https://install.pi-hole.net | bash
 ```
+For a detailed guide and further information on setting up Pi-Hole and PiVPN, you may check the following guide: [Setting Up PiHole with PiVPN and Unbound](https://blog.crankshafttech.com/2021/03/how-to-setup-pihole-pivpn-unbound.html?m=1#:~:text=Installing%20PiHole%20first%20is%20crucial,auto%20configuration%20later%20to%20occur.&text=If%20the%20installer%20asks%20for,list%20of%20Upstream%20DNS%20Providers.).
 
 7. Install the required Python dependencies using pip
 ```
