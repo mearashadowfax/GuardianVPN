@@ -26,6 +26,7 @@ PAYMENT_PROVIDER_TOKEN = 'YOUR_PAYMENT_PROVIDER_TOKEN'
 OVPN_FILE_PATH = '/path/to/ovpns/files/'
 WG_FILE_PATH = '/path/to/configs/files/'
 QR_CODE_PATH = '/path/to/qr/code/files/'
+LINKS_PATH = '/path/to/download/links/file/'
 
 ```
 4. In your existing `config.py` file within the project directory, make sure to adjust the setup accordingly to load and use these environmental variables
