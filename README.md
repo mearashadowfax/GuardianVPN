@@ -20,7 +20,7 @@ To learn more about the bot's features, visit the bot at [GuardianVPN](https://t
     • BotFather will provide you with a `TELEGRAM_API_TOKEN`. Save it for later use  
 2. Clone this repository and navigate to the project directory
 3. Create a `.env` file in the project directory and define the necessary variables (`TELEGRAM_API_TOKEN`, `PAYMENT_PROVIDER_TOKEN`) as well as custom file paths. The contents of your `.env` file should look like this:
-```
+```python
 TELEGRAM_API_TOKEN = 'YOUR_TELEGRAM_API_TOKEN'
 PAYMENT_PROVIDER_TOKEN = 'YOUR_PAYMENT_PROVIDER_TOKEN'
 OVPN_FILE_PATH = '/path/to/ovpns/files/'
@@ -31,21 +31,22 @@ QR_CODE_PATH = '/path/to/qr/code/files/'
 4. In your existing `config.py` file within the project directory, make sure to adjust the setup accordingly to load and use these environmental variables
    
 5. To generate QR codes, you might need to install `qrencode`:
-```
+```console
 sudo apt-get install qrencode
 ```
 6. If you are installing `PiVPN` or `Pi-Hole`, you can do so with the following commands:
-```
+```console
 curl -L https://install.pivpn.io | bash
 curl -sSL https://install.pi-hole.net | bash
 ```
+For a detailed guide and further information on setting up Pi-Hole and PiVPN, you may check the following guide: [Setting Up PiHole with PiVPN and Unbound](https://blog.crankshafttech.com/2021/03/how-to-setup-pihole-pivpn-unbound.html?m=1).
 
 7. Install the required Python dependencies using pip
-```
+```console
 pip3 install -r requirements.txt
 ```
 8. Execute the `bot.py` script to run the application:
-```
+```console
 python3 bot.py
 ```
 
