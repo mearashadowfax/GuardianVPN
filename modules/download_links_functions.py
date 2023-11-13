@@ -1,6 +1,9 @@
 # import the required modules
 import json  # for working with JSON data
 
+# import the file paths
+from config import LINKS_PATH
+
 # import the required Telegram modules
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import ContextTypes, ConversationHandler
@@ -71,7 +74,7 @@ async def get_download_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
     selected_os = context.user_data.get("selected_os")
 
     # load the download_links.json file and get the download link based on the user's app and OS selections
-    with open("../download_links.json") as f:
+    with open(LINKS_PATH) as f:
         data = json.load(f)
     url = data[selected_app][selected_os]
     # display the download link to the user
