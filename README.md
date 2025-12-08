@@ -3,6 +3,14 @@
 ![GuardianVPN](https://user-images.githubusercontent.com/125820963/227031972-c2d5c1ba-9b0d-4b47-9860-c3abc8a0d392.png)
 
 The GuardianVPN Telegram Bot allows users to generate configuration files for OpenVPN and WireGuard servers, which can then be used to connect to servers via the official OpenVPN or WireGuard app. In addition, the bot also enables users to purchase VPN access passes for a selected duration and pay with their preferred payment method. 
+
+> [!IMPORTANT]
+> **Status: Feature-Complete & Maintenance Mode**
+>
+> This Telegram bot is currently **stable and fully functional**. I am not planning to add new features (like new payment providers or additional VPN protocols) at this time.
+> 
+> The project remains active for use, and I will continue to review Pull Requests that address critical bugs or security issues. Community contributions are welcome to keep the bot updated with the latest Telegram API changes.
+> 
 ## Features
 • Telegram integration: Generate VPN configuration files with ease via Telegram  
 • VPN protocol support: Connect to OpenVPN and WireGuard servers  
