@@ -92,7 +92,7 @@ Here are some ideas for potential future developments for this project:
 • User dashboard: Create a customized user dashboard to allow users to manage their subscriptions and settings
 
 ## Contributions
-Contributions to this project are welcome. If you find a bug or have a feature request, please open an issue on the [GitHub repository](https://github.com/mearashadowfax/GuardianVPN/issues). If you'd like to contribute code, please fork the repository and submit a pull request.
+This project is archived and does not accept contributions. You are welcome to fork it for your own use.
 
 ## License
 This project is licensed under the MIT License - see the [LICENSE.md](https://github.com/mearashadowfax/GuardianVPN/blob/main/LICENSE) file for details.
